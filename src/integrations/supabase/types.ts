@@ -14,16 +14,193 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      business_members: {
+        Row: {
+          business_id: string
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["member_role"]
+          user_id: string
+        }
+        Insert: {
+          business_id: string
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["member_role"]
+          user_id: string
+        }
+        Update: {
+          business_id?: string
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["member_role"]
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "business_members_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      businesses: {
+        Row: {
+          created_at: string
+          created_by: string
+          id: string
+          industry: string | null
+          name: string
+          phone: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          id?: string
+          industry?: string | null
+          name: string
+          phone?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          id?: string
+          industry?: string | null
+          name?: string
+          phone?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      leads: {
+        Row: {
+          business_id: string
+          created_at: string
+          estimated_value: number
+          id: string
+          issue: string | null
+          name: string | null
+          phone: string
+          status: Database["public"]["Enums"]["lead_status"]
+          updated_at: string
+        }
+        Insert: {
+          business_id: string
+          created_at?: string
+          estimated_value?: number
+          id?: string
+          issue?: string | null
+          name?: string | null
+          phone: string
+          status?: Database["public"]["Enums"]["lead_status"]
+          updated_at?: string
+        }
+        Update: {
+          business_id?: string
+          created_at?: string
+          estimated_value?: number
+          id?: string
+          issue?: string | null
+          name?: string | null
+          phone?: string
+          status?: Database["public"]["Enums"]["lead_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "leads_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      messages: {
+        Row: {
+          body: string
+          business_id: string
+          created_at: string
+          direction: Database["public"]["Enums"]["msg_direction"]
+          id: string
+          lead_id: string
+        }
+        Insert: {
+          body: string
+          business_id: string
+          created_at?: string
+          direction: Database["public"]["Enums"]["msg_direction"]
+          id?: string
+          lead_id: string
+        }
+        Update: {
+          body?: string
+          business_id?: string
+          created_at?: string
+          direction?: Database["public"]["Enums"]["msg_direction"]
+          id?: string
+          lead_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "messages_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "messages_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "leads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          display_name: string | null
+          id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          display_name?: string | null
+          id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_business_role: {
+        Args: {
+          _business_id: string
+          _roles: Database["public"]["Enums"]["member_role"][]
+        }
+        Returns: boolean
+      }
+      is_business_member: { Args: { _business_id: string }; Returns: boolean }
     }
     Enums: {
-      [_ in never]: never
+      lead_status: "new" | "engaged" | "booked" | "lost"
+      member_role: "owner" | "admin" | "agent"
+      msg_direction: "in" | "out"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +327,10 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      lead_status: ["new", "engaged", "booked", "lost"],
+      member_role: ["owner", "admin", "agent"],
+      msg_direction: ["in", "out"],
+    },
   },
 } as const
