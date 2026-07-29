@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { motion, useScroll, useTransform, useSpring, useMotionValue } from "framer-motion";
+import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import {
   PhoneMissed,
   MessageSquareText,
@@ -12,28 +12,25 @@ import {
   Bot,
   Clock,
   ArrowRight,
+  ArrowUpRight,
   Check,
-  Star,
-  Wrench,
-  Stethoscope,
-  Home as HomeIcon,
-  Flame,
+  Sparkles,
 } from "lucide-react";
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "MissedCall AI — Recover lost customers from missed calls" },
+      { title: "MissedCall AI — Every missed call, answered." },
       {
         name: "description",
         content:
-          "AI answers every missed call with an instant SMS, qualifies the lead, and books the job — so roofers, plumbers, HVAC pros, electricians and dentists stop losing revenue.",
+          "Cinematic AI receptionist for local service businesses. Missed calls become booked jobs — instantly, autonomously, at scale.",
       },
-      { property: "og:title", content: "MissedCall AI — Turn missed calls into booked jobs" },
+      { property: "og:title", content: "MissedCall AI — Every missed call, answered." },
       {
         property: "og:description",
         content:
-          "Every missed call gets an instant AI text-back. Recover 30–40% of lost leads on autopilot.",
+          "The AI recovery layer for roofers, plumbers, HVAC, electricians & dentists. Never lose a lead again.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -42,225 +39,316 @@ export const Route = createFileRoute("/")({
   component: Landing,
 });
 
-function Landing() {
+/* ---------- primitives ---------- */
+
+function Reveal({
+  children,
+  delay = 0,
+  y = 40,
+  className = "",
+}: {
+  children: React.ReactNode;
+  delay?: number;
+  y?: number;
+  className?: string;
+}) {
   return (
-    <div className="min-h-screen bg-background text-foreground">
-      <Nav />
-      <Hero />
-      <LogoBar />
-      <HowItWorks />
-      <Features />
-      <Industries />
-      <Testimonials />
-      <Pricing />
-      <CTA />
-      <Footer />
+    <motion.div
+      initial={{ opacity: 0, y, filter: "blur(8px)" }}
+      whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+      viewport={{ once: true, margin: "-80px" }}
+      transition={{ duration: 0.9, delay, ease: [0.22, 1, 0.36, 1] }}
+      className={className}
+    >
+      {children}
+    </motion.div>
+  );
+}
+
+function Eyebrow({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-white/10 bg-white/[0.03] backdrop-blur text-[11px] uppercase tracking-[0.25em] text-muted-foreground">
+      <span className="size-1.5 rounded-full bg-primary shadow-[0_0_12px_var(--primary)]" />
+      {children}
     </div>
   );
 }
+
+/* ---------- hero backdrop: animated gradient mesh + grid ---------- */
+
+function HeroBackdrop() {
+  const ref = useRef<HTMLDivElement>(null);
+  const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end start"] });
+  const y = useTransform(scrollYProgress, [0, 1], [0, 200]);
+  const opacity = useTransform(scrollYProgress, [0, 1], [1, 0.2]);
+
+  return (
+    <motion.div ref={ref} style={{ y, opacity }} className="absolute inset-0 overflow-hidden pointer-events-none">
+      {/* radial mesh */}
+      <div className="absolute inset-0 [background:radial-gradient(ellipse_60%_50%_at_50%_0%,oklch(0.68_0.24_295/0.55),transparent_70%)]" />
+      <div className="absolute inset-0 [background:radial-gradient(ellipse_40%_40%_at_80%_30%,oklch(0.78_0.22_320/0.35),transparent_70%)]" />
+      <div className="absolute inset-0 [background:radial-gradient(ellipse_40%_40%_at_15%_60%,oklch(0.65_0.22_260/0.30),transparent_70%)]" />
+      {/* animated orbs */}
+      <motion.div
+        animate={{ x: [0, 60, -30, 0], y: [0, -40, 30, 0] }}
+        transition={{ duration: 22, repeat: Infinity, ease: "easeInOut" }}
+        className="absolute top-1/3 left-1/2 -translate-x-1/2 size-[520px] rounded-full bg-primary/20 blur-[120px]"
+      />
+      <motion.div
+        animate={{ x: [0, -80, 40, 0], y: [0, 30, -20, 0] }}
+        transition={{ duration: 26, repeat: Infinity, ease: "easeInOut" }}
+        className="absolute top-1/2 left-1/4 size-[380px] rounded-full bg-fuchsia-500/15 blur-[100px]"
+      />
+      {/* grid */}
+      <div
+        className="absolute inset-0 opacity-[0.12]"
+        style={{
+          backgroundImage:
+            "linear-gradient(to right, oklch(1 0 0 / 0.15) 1px, transparent 1px), linear-gradient(to bottom, oklch(1 0 0 / 0.15) 1px, transparent 1px)",
+          backgroundSize: "64px 64px",
+          maskImage: "radial-gradient(ellipse 70% 60% at 50% 40%, black, transparent 80%)",
+        }}
+      />
+      {/* noise */}
+      <div className="absolute inset-0 opacity-[0.06] mix-blend-overlay [background-image:url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22200%22><filter id=%22n%22><feTurbulence baseFrequency=%220.9%22/></filter><rect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23n)%22 opacity=%220.7%22/></svg>')]" />
+    </motion.div>
+  );
+}
+
+/* ---------- cursor spotlight ---------- */
+
+function useCursorSpotlight() {
+  const x = useMotionValue(0);
+  const y = useMotionValue(0);
+  const sx = useSpring(x, { stiffness: 120, damping: 20 });
+  const sy = useSpring(y, { stiffness: 120, damping: 20 });
+  useEffect(() => {
+    const h = (e: MouseEvent) => {
+      x.set(e.clientX);
+      y.set(e.clientY);
+    };
+    window.addEventListener("mousemove", h);
+    return () => window.removeEventListener("mousemove", h);
+  }, [x, y]);
+  return { sx, sy };
+}
+
+/* ---------- nav ---------- */
 
 function Nav() {
   return (
-    <header className="sticky top-0 z-40 border-b border-border/50 bg-background/70 backdrop-blur-xl">
-      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
+    <motion.header
+      initial={{ y: -30, opacity: 0 }}
+      animate={{ y: 0, opacity: 1 }}
+      transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+      className="fixed top-4 inset-x-0 z-50 flex justify-center px-4"
+    >
+      <nav className="w-full max-w-6xl flex items-center justify-between px-5 py-3 rounded-full border border-white/10 bg-background/60 backdrop-blur-xl shadow-[0_10px_40px_-10px_rgba(0,0,0,0.6)]">
         <Link to="/" className="flex items-center gap-2">
-          <div className="grid h-8 w-8 place-items-center rounded-lg bg-[image:var(--gradient-primary)] text-primary-foreground shadow-[var(--shadow-glow)]">
-            <PhoneMissed className="h-4 w-4" />
+          <div className="size-7 rounded-lg bg-gradient-to-br from-primary to-primary-glow shadow-[0_0_20px_var(--primary)] grid place-items-center">
+            <PhoneMissed className="size-3.5 text-primary-foreground" strokeWidth={2.5} />
           </div>
-          <span className="font-semibold tracking-tight">MissedCall AI</span>
+          <span className="text-sm font-semibold tracking-tight">MissedCall<span className="text-primary">.AI</span></span>
         </Link>
-        <nav className="hidden items-center gap-8 text-sm text-muted-foreground md:flex">
-          <a href="#how" className="transition-colors hover:text-foreground">How it works</a>
-          <a href="#features" className="transition-colors hover:text-foreground">Features</a>
-          <a href="#pricing" className="transition-colors hover:text-foreground">Pricing</a>
-          <Link to="/dashboard" className="transition-colors hover:text-foreground">Dashboard</Link>
-        </nav>
+        <div className="hidden md:flex items-center gap-8 text-sm text-muted-foreground">
+          <a href="#features" className="hover:text-foreground transition-colors">Features</a>
+          <a href="#how" className="hover:text-foreground transition-colors">How it works</a>
+          <a href="#pricing" className="hover:text-foreground transition-colors">Pricing</a>
+        </div>
         <div className="flex items-center gap-2">
-          <Link to="/dashboard">
-            <Button variant="ghost" size="sm">Sign in</Button>
-          </Link>
-          <Link to="/dashboard">
-            <Button
-              size="sm"
-              className="bg-[image:var(--gradient-primary)] text-primary-foreground hover:opacity-90"
-            >
-              Start free trial
+          <Link to="/auth" className="hidden sm:inline-block text-sm text-muted-foreground hover:text-foreground transition-colors px-3">Sign in</Link>
+          <Link to="/auth">
+            <Button size="sm" className="rounded-full bg-gradient-to-r from-primary to-primary-glow text-primary-foreground hover:opacity-90 shadow-[0_0_30px_-5px_var(--primary)]">
+              Start free <ArrowRight className="size-3.5 ml-1" />
             </Button>
           </Link>
         </div>
-      </div>
-    </header>
+      </nav>
+    </motion.header>
   );
 }
+
+/* ---------- hero ---------- */
 
 function Hero() {
+  const { sx, sy } = useCursorSpotlight();
   return (
-    <section className="relative overflow-hidden" style={{ background: "var(--gradient-hero)" }}>
-      <div className="mx-auto grid max-w-7xl gap-12 px-6 py-24 lg:grid-cols-2 lg:py-32">
-        <div className="flex flex-col justify-center">
-          <Badge className="w-fit border border-primary/30 bg-primary/10 text-primary hover:bg-primary/15">
-            <Zap className="mr-1 h-3 w-3" /> Answers in under 12 seconds
-          </Badge>
-          <h1 className="mt-6 text-5xl font-bold leading-[1.05] tracking-tight md:text-6xl lg:text-7xl">
-            Every missed call
+    <section className="relative min-h-[100svh] flex items-center justify-center overflow-hidden">
+      <HeroBackdrop />
+      <motion.div
+        style={{
+          background:
+            "radial-gradient(400px circle at var(--x) var(--y), oklch(0.68 0.24 295 / 0.15), transparent 60%)",
+          // @ts-expect-error css var
+          "--x": sx.get() + "px",
+          "--y": sy.get() + "px",
+        }}
+        className="pointer-events-none absolute inset-0"
+      />
+      <div className="relative z-10 max-w-6xl mx-auto px-6 pt-32 pb-24 text-center">
+        <Reveal delay={0.1}>
+          <Eyebrow>
+            <Sparkles className="size-3" /> AI Recovery Layer · v2.6
+          </Eyebrow>
+        </Reveal>
+
+        <Reveal delay={0.2}>
+          <h1 className="mt-8 text-[clamp(2.75rem,9vw,7.5rem)] font-semibold leading-[0.95] tracking-[-0.04em]">
+            Every missed call,
             <br />
-            is a lost{" "}
-            <span className="bg-[image:var(--gradient-primary)] bg-clip-text text-transparent">
-              customer.
+            <span className="bg-gradient-to-br from-white via-primary-glow to-primary bg-clip-text text-transparent">
+              answered.
             </span>
           </h1>
-          <p className="mt-6 max-w-xl text-lg text-muted-foreground">
-            MissedCall AI answers the ones you miss with an instant text-back, qualifies the
-            lead, and books the job — so roofers, plumbers, HVAC pros and dentists stop leaving
-            money on the table.
+        </Reveal>
+
+        <Reveal delay={0.35}>
+          <p className="mt-8 max-w-xl mx-auto text-base md:text-lg text-muted-foreground leading-relaxed">
+            The cinematic AI receptionist for local service businesses. Missed
+            calls become booked jobs — instantly, autonomously, at scale.
           </p>
-          <div className="mt-8 flex flex-wrap gap-3">
-            <Link to="/dashboard">
-              <Button
-                size="lg"
-                className="bg-[image:var(--gradient-primary)] text-primary-foreground shadow-[var(--shadow-glow)] hover:opacity-90"
-              >
-                See a live demo <ArrowRight className="ml-1 h-4 w-4" />
+        </Reveal>
+
+        <Reveal delay={0.5}>
+          <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-3">
+            <Link to="/auth">
+              <Button size="lg" className="rounded-full h-12 px-7 bg-gradient-to-r from-primary to-primary-glow text-primary-foreground shadow-[0_0_60px_-10px_var(--primary)] hover:scale-[1.02] transition-transform">
+                Start recovering revenue <ArrowRight className="size-4 ml-1" />
               </Button>
             </Link>
-            <Button size="lg" variant="outline" className="border-border">Watch 90-sec video</Button>
+            <a href="#how">
+              <Button size="lg" variant="ghost" className="rounded-full h-12 px-6 text-foreground hover:bg-white/5">
+                See it in motion
+              </Button>
+            </a>
           </div>
-          <div className="mt-8 flex flex-wrap items-center gap-6 text-sm text-muted-foreground">
-            <div className="flex items-center gap-2"><Check className="h-4 w-4 text-accent" /> 14-day free trial</div>
-            <div className="flex items-center gap-2"><Check className="h-4 w-4 text-accent" /> No credit card</div>
-            <div className="flex items-center gap-2"><Check className="h-4 w-4 text-accent" /> Setup in 8 min</div>
+        </Reveal>
+
+        <Reveal delay={0.7}>
+          <div className="mt-16 flex items-center justify-center gap-8 text-xs uppercase tracking-[0.25em] text-muted-foreground/70">
+            <span>60s response</span>
+            <span className="size-1 rounded-full bg-muted-foreground/40" />
+            <span>24/7 autonomous</span>
+            <span className="size-1 rounded-full bg-muted-foreground/40" />
+            <span>Zero setup</span>
           </div>
-        </div>
-        <div className="relative"><PhonePreview /></div>
+        </Reveal>
       </div>
-    </section>
-  );
-}
 
-function PhonePreview() {
-  return (
-    <div className="relative mx-auto max-w-sm">
-      <div className="absolute inset-0 -z-10 blur-3xl" style={{ background: "var(--gradient-primary)", opacity: 0.25 }} />
-      <Card className="overflow-hidden border-border/60 bg-[image:var(--gradient-card)] p-0 shadow-[var(--shadow-elegant)]">
-        <div className="flex items-center gap-3 border-b border-border/50 p-4">
-          <div className="grid h-10 w-10 place-items-center rounded-full bg-destructive/15 text-destructive">
-            <PhoneMissed className="h-5 w-5" />
-          </div>
-          <div>
-            <div className="text-sm font-medium">Missed call · (415) 555-0132</div>
-            <div className="text-xs text-muted-foreground">Just now</div>
-          </div>
-        </div>
-        <div className="space-y-3 p-4">
-          <Bubble side="out">Hi! This is Ava from Ridgeline Roofing — sorry we missed your call. What can we help you with today?</Bubble>
-          <Bubble side="in">My roof is leaking after last night's storm 😩 need someone out asap</Bubble>
-          <Bubble side="out">Got it — sounds urgent. What's your address, and would 2–4pm today work for a free inspection?</Bubble>
-          <Bubble side="in">2pm works. 482 Oak St, Berkeley</Bubble>
-          <div className="rounded-xl border border-accent/30 bg-accent/10 p-3 text-sm">
-            <div className="flex items-center gap-2 font-medium text-accent">
-              <CalendarCheck className="h-4 w-4" /> Job booked · Tue 2:00 PM
-            </div>
-            <div className="mt-1 text-xs text-muted-foreground">Added to calendar · Owner notified</div>
-          </div>
-        </div>
-      </Card>
-    </div>
-  );
-}
-
-function Bubble({ side, children }: { side: "in" | "out"; children: React.ReactNode }) {
-  const isOut = side === "out";
-  return (
-    <div className={`flex ${isOut ? "justify-start" : "justify-end"}`}>
-      <div
-        className={`max-w-[85%] rounded-2xl px-3.5 py-2 text-sm ${
-          isOut
-            ? "rounded-tl-sm bg-secondary text-secondary-foreground"
-            : "rounded-tr-sm bg-[image:var(--gradient-primary)] text-primary-foreground"
-        }`}
+      {/* floating device preview */}
+      <motion.div
+        initial={{ opacity: 0, y: 60 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 1.2, delay: 0.9, ease: [0.22, 1, 0.36, 1] }}
+        className="hidden lg:block absolute right-[6%] bottom-[8%] w-[280px] rotate-[6deg]"
       >
-        {children}
-      </div>
-    </div>
-  );
-}
-
-function LogoBar() {
-  const stats = [
-    { k: "38%", v: "avg lead recovery" },
-    { k: "12s", v: "response time" },
-    { k: "$4,200", v: "monthly revenue recovered" },
-    { k: "24/7", v: "always answering" },
-  ];
-  return (
-    <section className="border-y border-border/50 bg-card/40">
-      <div className="mx-auto grid max-w-7xl gap-6 px-6 py-10 sm:grid-cols-2 lg:grid-cols-4">
-        {stats.map((s) => (
-          <div key={s.v} className="text-center">
-            <div className="bg-[image:var(--gradient-primary)] bg-clip-text text-3xl font-bold text-transparent">{s.k}</div>
-            <div className="mt-1 text-sm text-muted-foreground">{s.v}</div>
+        <div className="rounded-[36px] border border-white/10 bg-card/70 backdrop-blur-xl p-4 shadow-[0_40px_120px_-20px_rgba(120,50,255,0.5)]">
+          <div className="text-[10px] uppercase tracking-widest text-muted-foreground flex justify-between">
+            <span>iMessage</span><span>now</span>
           </div>
+          <div className="mt-3 space-y-2 text-sm">
+            <div className="max-w-[80%] rounded-2xl rounded-bl-sm bg-white/[0.06] px-3 py-2">
+              Hey — sorry we missed you. This is Ava at Apex Roofing. Want a quote?
+            </div>
+            <div className="ml-auto max-w-[80%] rounded-2xl rounded-br-sm bg-primary/90 text-primary-foreground px-3 py-2">
+              Yeah, storm damage on the north side.
+            </div>
+            <div className="max-w-[80%] rounded-2xl rounded-bl-sm bg-white/[0.06] px-3 py-2">
+              Got it. Thursday 10am works for a free inspection — book it?
+            </div>
+          </div>
+        </div>
+      </motion.div>
+    </section>
+  );
+}
+
+/* ---------- trust ---------- */
+
+function Trust() {
+  const logos = ["APEX ROOFING", "NORTHWIND HVAC", "BLUEBIRD PLUMBING", "VOLT ELECTRIC", "MERIDIAN DENTAL", "HEARTHSTONE"];
+  return (
+    <section className="relative py-20 border-y border-white/5">
+      <Reveal>
+        <p className="text-center text-xs uppercase tracking-[0.3em] text-muted-foreground/70 mb-10">
+          Trusted by 1,200+ local operators
+        </p>
+      </Reveal>
+      <div className="max-w-6xl mx-auto px-6 grid grid-cols-2 md:grid-cols-6 gap-8 items-center">
+        {logos.map((l, i) => (
+          <Reveal key={l} delay={i * 0.05}>
+            <div className="text-center text-sm font-medium tracking-[0.2em] text-muted-foreground/60 hover:text-foreground transition-colors">
+              {l}
+            </div>
+          </Reveal>
         ))}
       </div>
     </section>
   );
 }
 
-function HowItWorks() {
-  const steps = [
-    { icon: PhoneMissed, title: "Call is missed", body: "We detect any unanswered call to your business line in real time." },
-    { icon: MessageSquareText, title: "AI texts back instantly", body: "Within seconds, the caller gets a natural SMS trained on your services." },
-    { icon: Bot, title: "Lead is qualified", body: "Ava asks the right questions, captures address, urgency, and job type." },
-    { icon: CalendarCheck, title: "Job is booked", body: "Straight into your calendar. You get a summary — no manual follow-up." },
-  ];
+/* ---------- features ---------- */
+
+const FEATURES = [
+  { icon: Bot, title: "AI Receptionist", body: "GPT-class agent that qualifies leads with your brand voice — 24/7, no scripts." },
+  { icon: Zap, title: "60-second SMS", body: "Auto-fires the moment a call is missed. Studies show conversion drops 8× after 5 minutes." },
+  { icon: CalendarCheck, title: "Auto-booking", body: "Two-way calendar sync places jobs directly into your crew's day." },
+  { icon: MessageSquareText, title: "Unified inbox", body: "SMS, WhatsApp, web chat, IG DMs — every conversation, one thread." },
+  { icon: BarChart3, title: "Recovery reports", body: "See revenue rescued, response time, and win-rate — down to the technician." },
+  { icon: ShieldCheck, title: "TCPA-safe", body: "Opt-in flows, quiet hours, and consent logs baked in. Sleep at night." },
+];
+
+function FeatureCard({ f, i }: { f: (typeof FEATURES)[number]; i: number }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [pos, setPos] = useState({ x: 0, y: 0, active: false });
   return (
-    <section id="how" className="mx-auto max-w-7xl px-6 py-24">
-      <div className="mx-auto max-w-2xl text-center">
-        <Badge variant="outline" className="border-border">How it works</Badge>
-        <h2 className="mt-4 text-4xl font-bold tracking-tight md:text-5xl">From missed call to booked job — automatically</h2>
-        <p className="mt-4 text-muted-foreground">Set it up once. MissedCall AI runs quietly in the background, recovering leads you didn't even know you were losing.</p>
+    <Reveal delay={i * 0.06}>
+      <div
+        ref={ref}
+        onMouseMove={(e) => {
+          const r = ref.current!.getBoundingClientRect();
+          setPos({ x: e.clientX - r.left, y: e.clientY - r.top, active: true });
+        }}
+        onMouseLeave={() => setPos((p) => ({ ...p, active: false }))}
+        className="group relative h-full rounded-2xl border border-white/10 bg-card/40 backdrop-blur-xl p-8 overflow-hidden transition-transform duration-500 hover:-translate-y-1"
+      >
+        <div
+          className="pointer-events-none absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity"
+          style={{
+            background: `radial-gradient(400px circle at ${pos.x}px ${pos.y}px, oklch(0.68 0.24 295 / 0.18), transparent 60%)`,
+          }}
+        />
+        <f.icon className="size-6 text-primary" strokeWidth={1.5} />
+        <h3 className="mt-6 text-xl font-semibold tracking-tight">{f.title}</h3>
+        <p className="mt-2 text-sm text-muted-foreground leading-relaxed">{f.body}</p>
+        <ArrowUpRight className="absolute top-6 right-6 size-4 text-muted-foreground/40 group-hover:text-primary group-hover:-translate-y-0.5 group-hover:translate-x-0.5 transition-all" />
       </div>
-      <div className="mt-14 grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-        {steps.map((s, i) => (
-          <Card key={s.title} className="relative overflow-hidden border-border/60 bg-[image:var(--gradient-card)] p-6">
-            <div className="absolute right-4 top-4 text-6xl font-bold text-muted/30">0{i + 1}</div>
-            <div className="grid h-11 w-11 place-items-center rounded-xl bg-primary/15 text-primary">
-              <s.icon className="h-5 w-5" />
-            </div>
-            <h3 className="mt-4 font-semibold">{s.title}</h3>
-            <p className="mt-2 text-sm text-muted-foreground">{s.body}</p>
-          </Card>
-        ))}
-      </div>
-    </section>
+    </Reveal>
   );
 }
 
 function Features() {
-  const features = [
-    { icon: Zap, title: "12-second response", body: "Leads that get a reply in under a minute convert 100x higher than those who wait an hour." },
-    { icon: Bot, title: "AI trained on your business", body: "Upload your services, pricing, and FAQs. Ava sounds like your best receptionist." },
-    { icon: CalendarCheck, title: "Calendar & CRM sync", body: "Google Calendar, Jobber, Housecall Pro, ServiceTitan — booked jobs land where you work." },
-    { icon: Clock, title: "Multi-step follow-ups", body: "No reply? Ava sends a friendly nudge at 1 hour, 24 hours, and 3 days." },
-    { icon: ShieldCheck, title: "TCPA-compliant", body: "Every reply respects opt-out rules. Full audit log of every message sent." },
-    { icon: BarChart3, title: "Revenue dashboard", body: "See exactly how many leads recovered and dollars won each week." },
-  ];
   return (
-    <section id="features" className="border-t border-border/50 bg-card/30">
-      <div className="mx-auto max-w-7xl px-6 py-24">
-        <div className="mx-auto max-w-2xl text-center">
-          <Badge variant="outline" className="border-border">Features</Badge>
-          <h2 className="mt-4 text-4xl font-bold tracking-tight md:text-5xl">Built for how service businesses actually run</h2>
+    <section id="features" className="relative py-32">
+      <div className="max-w-6xl mx-auto px-6">
+        <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6 mb-16">
+          <Reveal>
+            <Eyebrow>The Platform</Eyebrow>
+            <h2 className="mt-5 text-4xl md:text-6xl font-semibold tracking-[-0.03em] leading-[1]">
+              An unfair advantage,
+              <br />
+              <span className="text-muted-foreground">quietly running in the background.</span>
+            </h2>
+          </Reveal>
+          <Reveal delay={0.2}>
+            <p className="max-w-sm text-muted-foreground">
+              Six primitives, one mission — turn every missed ring into revenue.
+            </p>
+          </Reveal>
         </div>
-        <div className="mt-14 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {features.map((f) => (
-            <Card key={f.title} className="border-border/60 bg-background/60 p-6">
-              <div className="grid h-11 w-11 place-items-center rounded-xl bg-accent/15 text-accent">
-                <f.icon className="h-5 w-5" />
-              </div>
-              <h3 className="mt-4 font-semibold">{f.title}</h3>
-              <p className="mt-2 text-sm text-muted-foreground">{f.body}</p>
-            </Card>
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {FEATURES.map((f, i) => (
+            <FeatureCard key={f.title} f={f} i={i} />
           ))}
         </div>
       </div>
@@ -268,53 +356,99 @@ function Features() {
   );
 }
 
-function Industries() {
-  const items = [
-    { icon: HomeIcon, name: "Roofing" },
-    { icon: Wrench, name: "Plumbing" },
-    { icon: Flame, name: "HVAC" },
-    { icon: Zap, name: "Electrical" },
-    { icon: Stethoscope, name: "Dental" },
-  ];
+/* ---------- how it works ---------- */
+
+const STEPS = [
+  { n: "01", t: "Forward your line", d: "One click. We route unanswered calls through our AI layer — your number stays yours." },
+  { n: "02", t: "AI engages instantly", d: "Within 60 seconds, the caller gets a warm SMS from a named assistant trained on your business." },
+  { n: "03", t: "Job hits the calendar", d: "Qualified? Booked. Not ready? Nurtured. Your dashboard shows every dollar rescued in real time." },
+];
+
+function HowItWorks() {
+  const ref = useRef<HTMLDivElement>(null);
+  const { scrollYProgress } = useScroll({ target: ref, offset: ["start end", "end start"] });
+  const line = useTransform(scrollYProgress, [0.1, 0.9], ["0%", "100%"]);
   return (
-    <section className="mx-auto max-w-7xl px-6 py-24">
-      <div className="mx-auto max-w-2xl text-center">
-        <h2 className="text-3xl font-bold tracking-tight md:text-4xl">Trusted by local service pros</h2>
-        <p className="mt-3 text-muted-foreground">Tuned for the trades and healthcare practices that live on the phone.</p>
-      </div>
-      <div className="mt-10 flex flex-wrap justify-center gap-4">
-        {items.map((i) => (
-          <div key={i.name} className="flex items-center gap-2 rounded-full border border-border/60 bg-card/50 px-5 py-2.5 text-sm">
-            <i.icon className="h-4 w-4 text-primary" />
-            {i.name}
+    <section id="how" ref={ref} className="relative py-32 bg-gradient-to-b from-transparent via-black/40 to-transparent">
+      <div className="max-w-5xl mx-auto px-6">
+        <Reveal>
+          <Eyebrow>The Flow</Eyebrow>
+          <h2 className="mt-5 text-4xl md:text-6xl font-semibold tracking-[-0.03em] leading-[1]">
+            From ring to revenue,
+            <br />
+            <span className="bg-gradient-to-r from-primary to-primary-glow bg-clip-text text-transparent">in three moves.</span>
+          </h2>
+        </Reveal>
+
+        <div className="relative mt-20 pl-6 md:pl-10">
+          <div className="absolute left-0 top-2 bottom-2 w-px bg-white/10">
+            <motion.div style={{ height: line }} className="w-full bg-gradient-to-b from-primary to-primary-glow" />
           </div>
-        ))}
+          <div className="space-y-20">
+            {STEPS.map((s, i) => (
+              <Reveal key={s.n} delay={i * 0.1} y={60}>
+                <div className="grid md:grid-cols-[120px_1fr] gap-6 md:gap-12 items-start">
+                  <div className="text-5xl md:text-6xl font-semibold tracking-tighter text-transparent [-webkit-text-stroke:1px_var(--primary)]">
+                    {s.n}
+                  </div>
+                  <div>
+                    <h3 className="text-2xl md:text-4xl font-semibold tracking-tight">{s.t}</h3>
+                    <p className="mt-3 max-w-xl text-muted-foreground leading-relaxed">{s.d}</p>
+                  </div>
+                </div>
+              </Reveal>
+            ))}
+          </div>
+        </div>
       </div>
     </section>
   );
 }
+
+/* ---------- testimonials ---------- */
+
+const QUOTES = [
+  { q: "We recovered $47k in the first month. It answers faster than my front desk ever did.", n: "Marco Reyes", r: "Owner, Apex Roofing", tall: true },
+  { q: "Our booking rate on after-hours calls went from 12% to 61%.", n: "Priya Anand", r: "Ops, Northwind HVAC" },
+  { q: "It feels less like software and more like hiring an unshakably calm receptionist.", n: "Dr. Lena Osei", r: "Meridian Dental" },
+  { q: "The dashboard is the first ROI report I've actually read cover-to-cover.", n: "Jake Whitman", r: "Volt Electric" },
+];
 
 function Testimonials() {
-  const t = [
-    { quote: "We were missing 20+ calls a week. Ava recovered $18k in booked jobs the first month. It pays for itself in a day.", name: "Marcus Reed", role: "Owner, Ridgeline Roofing" },
-    { quote: "The texts actually sound like a real person. Customers don't even realize it's AI — they just get taken care of.", name: "Priya Shah", role: "Ops Manager, Delta Plumbing" },
-    { quote: "I stopped losing patients to voicemail. Every missed call gets rebooked. Best software we've bought in years.", name: "Dr. Alan Foster", role: "Foster Family Dental" },
-  ];
   return (
-    <section className="border-t border-border/50 bg-card/30">
-      <div className="mx-auto max-w-7xl px-6 py-24">
-        <div className="grid gap-6 md:grid-cols-3">
-          {t.map((x) => (
-            <Card key={x.name} className="border-border/60 bg-background/60 p-6">
-              <div className="flex text-primary">
-                {Array.from({ length: 5 }).map((_, i) => (<Star key={i} className="h-4 w-4 fill-current" />))}
-              </div>
-              <p className="mt-4 text-sm leading-relaxed">"{x.quote}"</p>
-              <div className="mt-6">
-                <div className="text-sm font-semibold">{x.name}</div>
-                <div className="text-xs text-muted-foreground">{x.role}</div>
-              </div>
-            </Card>
+    <section className="relative py-32">
+      <div className="max-w-6xl mx-auto px-6">
+        <Reveal>
+          <Eyebrow>Field Reports</Eyebrow>
+          <h2 className="mt-5 text-4xl md:text-6xl font-semibold tracking-[-0.03em] leading-[1] max-w-3xl">
+            Operators who stopped
+            <span className="text-muted-foreground"> losing sleep.</span>
+          </h2>
+        </Reveal>
+
+        <div className="mt-16 grid md:grid-cols-4 gap-4 auto-rows-[minmax(220px,auto)]">
+          {QUOTES.map((q, i) => (
+            <Reveal
+              key={q.n}
+              delay={i * 0.08}
+              className={
+                i === 0
+                  ? "md:col-span-2 md:row-span-2"
+                  : i === 3
+                  ? "md:col-span-2"
+                  : ""
+              }
+            >
+              <figure className="h-full rounded-2xl border border-white/10 bg-gradient-to-br from-card/60 to-card/20 backdrop-blur p-8 flex flex-col justify-between hover:border-primary/40 transition-colors">
+                <blockquote className={`${i === 0 ? "text-2xl md:text-3xl" : "text-lg"} font-medium tracking-tight leading-snug`}>
+                  &ldquo;{q.q}&rdquo;
+                </blockquote>
+                <figcaption className="mt-8 text-sm">
+                  <div className="font-medium">{q.n}</div>
+                  <div className="text-muted-foreground">{q.r}</div>
+                </figcaption>
+              </figure>
+            </Reveal>
           ))}
         </div>
       </div>
@@ -322,82 +456,182 @@ function Testimonials() {
   );
 }
 
+/* ---------- pricing ---------- */
+
+const TIERS = [
+  {
+    name: "Starter",
+    price: "$79",
+    tag: "Solo operators",
+    features: ["Up to 200 recoveries / mo", "AI SMS agent", "Unified inbox", "Email support"],
+  },
+  {
+    name: "Growth",
+    price: "$249",
+    tag: "Growing crews",
+    features: ["Up to 1,500 recoveries / mo", "Auto-booking + calendar sync", "Team seats", "Priority support"],
+    highlight: true,
+  },
+  {
+    name: "Signature",
+    price: "Custom",
+    tag: "Multi-location",
+    features: ["Unlimited recoveries", "Dedicated AI training", "SLA + white-glove onboarding", "Named success partner"],
+    premium: true,
+  },
+];
+
 function Pricing() {
-  const tiers = [
-    { name: "Starter", price: "$79", desc: "For solo operators just getting off voicemail.", features: ["Up to 100 recovered leads/mo", "AI text-back", "Google Calendar sync", "Email support"] },
-    { name: "Growth", price: "$199", desc: "For growing crews that live on the phone.", features: ["Up to 500 recovered leads/mo", "Multi-step follow-ups", "CRM integrations (Jobber, HCP)", "Custom AI training", "Priority support"], featured: true },
-    { name: "Scale", price: "$449", desc: "Multi-location shops and franchises.", features: ["Unlimited leads", "Multiple business lines", "ServiceTitan integration", "Dedicated success manager"] },
-  ];
   return (
-    <section id="pricing" className="mx-auto max-w-7xl px-6 py-24">
-      <div className="mx-auto max-w-2xl text-center">
-        <Badge variant="outline" className="border-border">Pricing</Badge>
-        <h2 className="mt-4 text-4xl font-bold tracking-tight md:text-5xl">One booked job pays for the year</h2>
-        <p className="mt-4 text-muted-foreground">Simple, flat pricing. Cancel anytime. 14-day free trial on every plan.</p>
-      </div>
-      <div className="mt-14 grid gap-6 md:grid-cols-3">
-        {tiers.map((t) => (
-          <Card key={t.name} className={`relative border-border/60 p-8 ${t.featured ? "bg-[image:var(--gradient-card)] shadow-[var(--shadow-glow)] ring-1 ring-primary/40" : "bg-background/60"}`}>
-            {t.featured && (
-              <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[image:var(--gradient-primary)] text-primary-foreground">Most popular</Badge>
-            )}
-            <div className="text-sm font-medium text-muted-foreground">{t.name}</div>
-            <div className="mt-3 flex items-baseline gap-1">
-              <span className="text-5xl font-bold tracking-tight">{t.price}</span>
-              <span className="text-muted-foreground">/mo</span>
-            </div>
-            <p className="mt-2 text-sm text-muted-foreground">{t.desc}</p>
-            <ul className="mt-6 space-y-3 text-sm">
-              {t.features.map((f) => (
-                <li key={f} className="flex gap-2"><Check className="mt-0.5 h-4 w-4 shrink-0 text-accent" />{f}</li>
-              ))}
-            </ul>
-            <Link to="/dashboard" className="mt-8 block">
-              <Button className={`w-full ${t.featured ? "bg-[image:var(--gradient-primary)] text-primary-foreground hover:opacity-90" : ""}`} variant={t.featured ? "default" : "outline"}>Start free trial</Button>
-            </Link>
-          </Card>
-        ))}
+    <section id="pricing" className="relative py-32">
+      <div className="max-w-6xl mx-auto px-6">
+        <Reveal>
+          <Eyebrow>Pricing</Eyebrow>
+          <h2 className="mt-5 text-4xl md:text-6xl font-semibold tracking-[-0.03em] leading-[1]">
+            Priced like software.
+            <br />
+            <span className="text-muted-foreground">Pays like a top rep.</span>
+          </h2>
+        </Reveal>
+
+        <div className="mt-16 grid md:grid-cols-3 gap-4">
+          {TIERS.map((t, i) => (
+            <Reveal key={t.name} delay={i * 0.08}>
+              <div
+                className={`relative h-full rounded-2xl border p-8 flex flex-col ${
+                  t.premium
+                    ? "border-accent/50 bg-gradient-to-b from-accent/[0.08] to-transparent"
+                    : t.highlight
+                    ? "border-primary/50 bg-gradient-to-b from-primary/[0.12] to-transparent shadow-[0_30px_80px_-30px_var(--primary)]"
+                    : "border-white/10 bg-card/40"
+                }`}
+              >
+                {t.highlight && (
+                  <div className="absolute -top-3 left-8 text-[10px] uppercase tracking-[0.25em] bg-primary text-primary-foreground px-3 py-1 rounded-full">
+                    Most chosen
+                  </div>
+                )}
+                {t.premium && (
+                  <div className="absolute -top-3 left-8 text-[10px] uppercase tracking-[0.25em] bg-accent text-accent-foreground px-3 py-1 rounded-full">
+                    Signature
+                  </div>
+                )}
+                <div className="text-sm text-muted-foreground">{t.tag}</div>
+                <div className="mt-2 text-2xl font-semibold tracking-tight">{t.name}</div>
+                <div className="mt-6 flex items-baseline gap-1">
+                  <span
+                    className={`text-5xl font-semibold tracking-tighter ${
+                      t.premium ? "bg-gradient-to-br from-accent to-yellow-200 bg-clip-text text-transparent" : ""
+                    }`}
+                  >
+                    {t.price}
+                  </span>
+                  {t.price !== "Custom" && <span className="text-muted-foreground text-sm">/mo</span>}
+                </div>
+                <ul className="mt-8 space-y-3 flex-1">
+                  {t.features.map((f) => (
+                    <li key={f} className="flex items-start gap-2 text-sm">
+                      <Check className={`size-4 mt-0.5 ${t.premium ? "text-accent" : "text-primary"}`} />
+                      <span className="text-foreground/90">{f}</span>
+                    </li>
+                  ))}
+                </ul>
+                <Link to="/auth" className="mt-8">
+                  <Button
+                    className={`w-full rounded-full h-11 ${
+                      t.highlight
+                        ? "bg-gradient-to-r from-primary to-primary-glow text-primary-foreground"
+                        : t.premium
+                        ? "bg-accent text-accent-foreground hover:bg-accent/90"
+                        : "bg-white/5 hover:bg-white/10 text-foreground"
+                    }`}
+                  >
+                    {t.premium ? "Talk to us" : "Start free"}
+                  </Button>
+                </Link>
+              </div>
+            </Reveal>
+          ))}
+        </div>
       </div>
     </section>
   );
 }
 
-function CTA() {
+/* ---------- final CTA ---------- */
+
+function FinalCTA() {
   return (
-    <section className="mx-auto max-w-7xl px-6 pb-24">
-      <Card className="overflow-hidden border-border/60 p-12 text-center" style={{ background: "var(--gradient-hero)" }}>
-        <h2 className="text-4xl font-bold tracking-tight md:text-5xl">Stop losing customers to voicemail.</h2>
-        <p className="mx-auto mt-4 max-w-xl text-muted-foreground">See how many leads you'd recover this month. Free 14-day trial, no card required.</p>
-        <div className="mt-8 flex justify-center gap-3">
-          <Link to="/dashboard">
-            <Button size="lg" className="bg-[image:var(--gradient-primary)] text-primary-foreground shadow-[var(--shadow-glow)] hover:opacity-90">
-              Start free trial <ArrowRight className="ml-1 h-4 w-4" />
+    <section className="relative py-40 overflow-hidden">
+      <div className="absolute inset-0 [background:radial-gradient(ellipse_60%_60%_at_50%_50%,oklch(0.68_0.24_295/0.35),transparent_70%)]" />
+      <div className="relative max-w-5xl mx-auto px-6 text-center">
+        <Reveal>
+          <h2 className="text-5xl md:text-8xl font-semibold tracking-[-0.04em] leading-[0.95]">
+            Stop losing
+            <br />
+            <span className="bg-gradient-to-br from-white via-primary-glow to-primary bg-clip-text text-transparent">
+              the ones who called.
+            </span>
+          </h2>
+        </Reveal>
+        <Reveal delay={0.2}>
+          <p className="mt-8 text-lg text-muted-foreground max-w-xl mx-auto">
+            Two minutes to install. Revenue rescued by tonight.
+          </p>
+        </Reveal>
+        <Reveal delay={0.35}>
+          <Link to="/auth">
+            <Button size="lg" className="mt-10 rounded-full h-14 px-8 text-base bg-gradient-to-r from-primary to-primary-glow text-primary-foreground shadow-[0_0_80px_-10px_var(--primary)] hover:scale-[1.02] transition-transform">
+              Claim your line <ArrowRight className="size-4 ml-2" />
             </Button>
           </Link>
-          <Button size="lg" variant="outline">Book a demo</Button>
-        </div>
-      </Card>
+        </Reveal>
+        <Reveal delay={0.5}>
+          <div className="mt-8 flex items-center justify-center gap-6 text-xs uppercase tracking-[0.25em] text-muted-foreground/70">
+            <span className="flex items-center gap-1.5"><Clock className="size-3" /> 2-min setup</span>
+            <span className="flex items-center gap-1.5"><ShieldCheck className="size-3" /> TCPA-safe</span>
+          </div>
+        </Reveal>
+      </div>
     </section>
   );
 }
+
+/* ---------- footer ---------- */
 
 function Footer() {
   return (
-    <footer className="border-t border-border/50 bg-card/30">
-      <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 px-6 py-8 text-sm text-muted-foreground md:flex-row">
+    <footer className="relative border-t border-white/5 py-10">
+      <div className="max-w-6xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-muted-foreground">
         <div className="flex items-center gap-2">
-          <div className="grid h-6 w-6 place-items-center rounded-md bg-[image:var(--gradient-primary)] text-primary-foreground">
-            <PhoneMissed className="h-3 w-3" />
-          </div>
-          <span className="font-medium text-foreground">MissedCall AI</span>
+          <div className="size-5 rounded-md bg-gradient-to-br from-primary to-primary-glow" />
+          <span className="text-foreground">MissedCall.AI</span>
           <span>© {new Date().getFullYear()}</span>
         </div>
-        <div className="flex gap-6">
-          <a href="#" className="hover:text-foreground">Privacy</a>
-          <a href="#" className="hover:text-foreground">Terms</a>
-          <a href="#" className="hover:text-foreground">Contact</a>
+        <div className="flex items-center gap-6">
+          <a href="#" className="hover:text-foreground transition-colors">Privacy</a>
+          <a href="#" className="hover:text-foreground transition-colors">Terms</a>
+          <a href="#" className="hover:text-foreground transition-colors">Status</a>
         </div>
       </div>
     </footer>
+  );
+}
+
+/* ---------- page ---------- */
+
+function Landing() {
+  return (
+    <main className="relative bg-background text-foreground selection:bg-primary/40">
+      <Nav />
+      <Hero />
+      <Trust />
+      <Features />
+      <HowItWorks />
+      <Testimonials />
+      <Pricing />
+      <FinalCTA />
+      <Footer />
+    </main>
   );
 }
