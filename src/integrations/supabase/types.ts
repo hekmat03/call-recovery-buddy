@@ -14,99 +14,121 @@ export type Database = {
   }
   public: {
     Tables: {
-      business_members: {
+      businesses: {
+        Row: {
+          business_hours: string | null
+          company_name: string
+          created_at: string
+          id: string
+          industry: string | null
+          phone_number: string | null
+          service_area: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          business_hours?: string | null
+          company_name: string
+          created_at?: string
+          id?: string
+          industry?: string | null
+          phone_number?: string | null
+          service_area?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          business_hours?: string | null
+          company_name?: string
+          created_at?: string
+          id?: string
+          industry?: string | null
+          phone_number?: string | null
+          service_area?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      conversations: {
         Row: {
           business_id: string
           created_at: string
           id: string
-          role: Database["public"]["Enums"]["member_role"]
-          user_id: string
+          lead_id: string
+          message: string
+          sender: Database["public"]["Enums"]["msg_sender"]
         }
         Insert: {
           business_id: string
           created_at?: string
           id?: string
-          role?: Database["public"]["Enums"]["member_role"]
-          user_id: string
+          lead_id: string
+          message: string
+          sender: Database["public"]["Enums"]["msg_sender"]
         }
         Update: {
           business_id?: string
           created_at?: string
           id?: string
-          role?: Database["public"]["Enums"]["member_role"]
-          user_id?: string
+          lead_id?: string
+          message?: string
+          sender?: Database["public"]["Enums"]["msg_sender"]
         }
         Relationships: [
           {
-            foreignKeyName: "business_members_business_id_fkey"
+            foreignKeyName: "conversations_business_id_fkey"
             columns: ["business_id"]
             isOneToOne: false
             referencedRelation: "businesses"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "conversations_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "leads"
+            referencedColumns: ["id"]
+          },
         ]
-      }
-      businesses: {
-        Row: {
-          created_at: string
-          created_by: string
-          id: string
-          industry: string | null
-          name: string
-          phone: string | null
-          updated_at: string
-        }
-        Insert: {
-          created_at?: string
-          created_by: string
-          id?: string
-          industry?: string | null
-          name: string
-          phone?: string | null
-          updated_at?: string
-        }
-        Update: {
-          created_at?: string
-          created_by?: string
-          id?: string
-          industry?: string | null
-          name?: string
-          phone?: string | null
-          updated_at?: string
-        }
-        Relationships: []
       }
       leads: {
         Row: {
           business_id: string
           created_at: string
+          customer_email: string | null
+          customer_name: string | null
+          customer_phone: string
           estimated_value: number
           id: string
-          issue: string | null
-          name: string | null
-          phone: string
+          lead_source: string
+          notes: string | null
           status: Database["public"]["Enums"]["lead_status"]
           updated_at: string
         }
         Insert: {
           business_id: string
           created_at?: string
+          customer_email?: string | null
+          customer_name?: string | null
+          customer_phone: string
           estimated_value?: number
           id?: string
-          issue?: string | null
-          name?: string | null
-          phone: string
+          lead_source?: string
+          notes?: string | null
           status?: Database["public"]["Enums"]["lead_status"]
           updated_at?: string
         }
         Update: {
           business_id?: string
           created_at?: string
+          customer_email?: string | null
+          customer_name?: string | null
+          customer_phone?: string
           estimated_value?: number
           id?: string
-          issue?: string | null
-          name?: string | null
-          phone?: string
+          lead_source?: string
+          notes?: string | null
           status?: Database["public"]["Enums"]["lead_status"]
           updated_at?: string
         }
@@ -120,44 +142,49 @@ export type Database = {
           },
         ]
       }
-      messages: {
+      missed_calls: {
         Row: {
-          body: string
           business_id: string
           created_at: string
-          direction: Database["public"]["Enums"]["msg_direction"]
+          customer_name: string | null
+          customer_phone: string
+          date_time: string
           id: string
-          lead_id: string
+          notes: string | null
+          source: string
+          status: Database["public"]["Enums"]["missed_call_status"]
+          updated_at: string
         }
         Insert: {
-          body: string
           business_id: string
           created_at?: string
-          direction: Database["public"]["Enums"]["msg_direction"]
+          customer_name?: string | null
+          customer_phone: string
+          date_time?: string
           id?: string
-          lead_id: string
+          notes?: string | null
+          source?: string
+          status?: Database["public"]["Enums"]["missed_call_status"]
+          updated_at?: string
         }
         Update: {
-          body?: string
           business_id?: string
           created_at?: string
-          direction?: Database["public"]["Enums"]["msg_direction"]
+          customer_name?: string | null
+          customer_phone?: string
+          date_time?: string
           id?: string
-          lead_id?: string
+          notes?: string | null
+          source?: string
+          status?: Database["public"]["Enums"]["missed_call_status"]
+          updated_at?: string
         }
         Relationships: [
           {
-            foreignKeyName: "messages_business_id_fkey"
+            foreignKeyName: "missed_calls_business_id_fkey"
             columns: ["business_id"]
             isOneToOne: false
             referencedRelation: "businesses"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "messages_lead_id_fkey"
-            columns: ["lead_id"]
-            isOneToOne: false
-            referencedRelation: "leads"
             referencedColumns: ["id"]
           },
         ]
@@ -188,19 +215,12 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      has_business_role: {
-        Args: {
-          _business_id: string
-          _roles: Database["public"]["Enums"]["member_role"][]
-        }
-        Returns: boolean
-      }
-      is_business_member: { Args: { _business_id: string }; Returns: boolean }
+      owns_business: { Args: { _business_id: string }; Returns: boolean }
     }
     Enums: {
       lead_status: "new" | "engaged" | "booked" | "lost"
-      member_role: "owner" | "admin" | "agent"
-      msg_direction: "in" | "out"
+      missed_call_status: "pending" | "contacted" | "recovered" | "lost"
+      msg_sender: "customer" | "ai" | "business"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -329,8 +349,8 @@ export const Constants = {
   public: {
     Enums: {
       lead_status: ["new", "engaged", "booked", "lost"],
-      member_role: ["owner", "admin", "agent"],
-      msg_direction: ["in", "out"],
+      missed_call_status: ["pending", "contacted", "recovered", "lost"],
+      msg_sender: ["customer", "ai", "business"],
     },
   },
 } as const
