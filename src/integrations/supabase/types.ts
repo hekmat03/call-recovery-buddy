@@ -215,7 +215,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      owns_business: { Args: { _business_id: string }; Returns: boolean }
+      [_ in never]: never
     }
     Enums: {
       lead_status: "new" | "engaged" | "booked" | "lost"
