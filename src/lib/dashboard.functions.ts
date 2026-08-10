@@ -3,24 +3,26 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { z } from "zod";
 
 // Every function below runs as the signed-in user via requireSupabaseAuth,
-// so RLS enforces "only members of a business can see its data". No manual
-// business-membership checks needed in application code — RLS is the boundary.
+// so RLS enforces "only the owner of a business can see its data". No manual
+// ownership checks needed in application code — RLS is the boundary.
 
 export const listMyBusinesses = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     const { data, error } = await context.supabase
-      .from("business_members")
-      .select("role, businesses:business_id ( id, name, industry, phone )")
+      .from("businesses")
+      .select("id, company_name, industry, phone_number, service_area, business_hours")
       .order("created_at", { ascending: true });
     if (error) throw error;
-    return (data ?? []).map((r) => ({
-      role: r.role as "owner" | "admin" | "agent",
-      business: r.businesses as {
-        id: string;
-        name: string;
-        industry: string | null;
-        phone: string | null;
+    return (data ?? []).map((b) => ({
+      role: "owner" as const,
+      business: {
+        id: b.id,
+        name: b.company_name,
+        industry: b.industry,
+        phone: b.phone_number,
+        serviceArea: b.service_area,
+        businessHours: b.business_hours,
       },
     }));
   });
@@ -33,7 +35,9 @@ export const listLeads = createServerFn({ method: "GET" })
   .handler(async ({ context, data }) => {
     const { data: leads, error } = await context.supabase
       .from("leads")
-      .select("id, name, phone, issue, status, estimated_value, created_at")
+      .select(
+        "id, customer_name, customer_phone, customer_email, lead_source, status, estimated_value, notes, created_at",
+      )
       .eq("business_id", data.businessId)
       .order("created_at", { ascending: false })
       .limit(50);
@@ -94,8 +98,8 @@ export const listMessages = createServerFn({ method: "GET" })
   .inputValidator((input: unknown) => LeadIdInput.parse(input))
   .handler(async ({ context, data }) => {
     const { data: msgs, error } = await context.supabase
-      .from("messages")
-      .select("id, direction, body, created_at")
+      .from("conversations")
+      .select("id, sender, message, created_at")
       .eq("lead_id", data.leadId)
       .order("created_at", { ascending: true });
     if (error) throw error;
@@ -113,14 +117,14 @@ export const sendMessage = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) => SendMessageInput.parse(input))
   .handler(async ({ context, data }) => {
     const { data: msg, error } = await context.supabase
-      .from("messages")
+      .from("conversations")
       .insert({
         lead_id: data.leadId,
         business_id: data.businessId,
-        direction: "out",
-        body: data.body,
+        sender: "business" as const,
+        message: data.body,
       })
-      .select("id, direction, body, created_at")
+      .select("id, sender, message, created_at")
       .single();
     if (error) throw error;
     return msg;
@@ -130,6 +134,8 @@ const CreateBusinessInput = z.object({
   name: z.string().trim().min(1).max(120),
   industry: z.string().trim().max(60).optional(),
   phone: z.string().trim().max(40).optional(),
+  serviceArea: z.string().trim().max(160).optional(),
+  businessHours: z.string().trim().max(160).optional(),
 });
 
 export const createBusiness = createServerFn({ method: "POST" })
@@ -139,17 +145,31 @@ export const createBusiness = createServerFn({ method: "POST" })
     const { data: biz, error } = await context.supabase
       .from("businesses")
       .insert({
-        name: data.name,
+        company_name: data.name,
         industry: data.industry ?? null,
-        phone: data.phone ?? null,
-        created_by: context.userId,
+        phone_number: data.phone ?? null,
+        service_area: data.serviceArea ?? null,
+        business_hours: data.businessHours ?? null,
+        user_id: context.userId,
       })
       .select("id")
       .single();
     if (error) throw error;
-    const { error: memErr } = await context.supabase
-      .from("business_members")
-      .insert({ business_id: biz.id, user_id: context.userId, role: "owner" });
-    if (memErr) throw memErr;
     return biz;
+  });
+
+const MissedCallScope = z.object({ businessId: z.string().uuid() });
+
+export const listMissedCalls = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) => MissedCallScope.parse(input))
+  .handler(async ({ context, data }) => {
+    const { data: calls, error } = await context.supabase
+      .from("missed_calls")
+      .select("id, customer_name, customer_phone, date_time, source, status, notes")
+      .eq("business_id", data.businessId)
+      .order("date_time", { ascending: false })
+      .limit(50);
+    if (error) throw error;
+    return calls ?? [];
   });

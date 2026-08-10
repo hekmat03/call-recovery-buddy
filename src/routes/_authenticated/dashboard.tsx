@@ -221,9 +221,9 @@ function DashboardBody({ businessId }: { businessId: string }) {
         const q = query.toLowerCase();
         if (!q) return true;
         return (
-          (l.name ?? "").toLowerCase().includes(q) ||
-          l.phone.toLowerCase().includes(q) ||
-          (l.issue ?? "").toLowerCase().includes(q)
+          (l.customer_name ?? "").toLowerCase().includes(q) ||
+          l.customer_phone.toLowerCase().includes(q) ||
+          (l.notes ?? "").toLowerCase().includes(q)
         );
       }),
     [leads, query],
@@ -269,11 +269,11 @@ function DashboardBody({ businessId }: { businessId: string }) {
                 }`}
               >
                 <div className="flex items-center justify-between">
-                  <div className="font-medium">{l.name ?? "Unknown caller"}</div>
+                  <div className="font-medium">{l.customer_name ?? "Unknown caller"}</div>
                   <StatusPill status={l.status} />
                 </div>
-                <div className="mt-1 text-xs text-muted-foreground">{l.phone}</div>
-                <div className="mt-2 line-clamp-1 text-sm text-muted-foreground">{l.issue ?? ""}</div>
+                <div className="mt-1 text-xs text-muted-foreground">{l.customer_phone}</div>
+                <div className="mt-2 line-clamp-1 text-sm text-muted-foreground">{l.notes ?? ""}</div>
                 <div className="mt-2 text-[11px] text-muted-foreground">
                   {timeAgo(l.created_at)}
                 </div>
@@ -399,8 +399,8 @@ function ConversationPane({ lead, businessId }: { lead: Lead | null; businessId:
       <div className="border-b border-border/50 px-6 py-4">
         <div className="flex items-center justify-between">
           <div>
-            <div className="font-medium">{lead.name ?? "Unknown caller"}</div>
-            <div className="text-xs text-muted-foreground">{lead.phone} · {lead.issue}</div>
+            <div className="font-medium">{lead.customer_name ?? "Unknown caller"}</div>
+            <div className="text-xs text-muted-foreground">{lead.customer_phone} · {lead.notes}</div>
           </div>
           <StatusPill status={lead.status} />
         </div>
@@ -412,7 +412,7 @@ function ConversationPane({ lead, businessId }: { lead: Lead | null; businessId:
           </div>
         )}
         {messages.map((m) => {
-          const isOut = m.direction === "out";
+          const isOut = m.sender !== "customer";
           return (
             <div key={m.id} className={`flex ${isOut ? "justify-start" : "justify-end"}`}>
               <div
@@ -422,7 +422,7 @@ function ConversationPane({ lead, businessId }: { lead: Lead | null; businessId:
                     : "rounded-tr-sm bg-[image:var(--gradient-primary)] text-primary-foreground"
                 }`}
               >
-                {m.body}
+                {m.message}
               </div>
             </div>
           );
@@ -457,8 +457,8 @@ function LeadDetail({ lead }: { lead: Lead }) {
     <div className="mt-8 border-t border-border/50 pt-6">
       <h3 className="text-sm font-semibold">Lead details</h3>
       <dl className="mt-4 space-y-3 text-sm">
-        <Row k="Phone" v={lead.phone} />
-        <Row k="Issue" v={lead.issue ?? "—"} />
+        <Row k="Phone" v={lead.customer_phone} />
+        <Row k="Issue" v={lead.notes ?? "—"} />
         <Row k="Status" v={<StatusPill status={lead.status} />} />
         <Row k="Est. value" v={`$${lead.estimated_value.toLocaleString()}`} />
         <Row k="Received" v={timeAgo(lead.created_at)} />
