@@ -116,6 +116,22 @@ function SignInForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [mode, setMode] = useState<"password" | "forgot">("password");
+
+  async function onForgot(e: React.FormEvent) {
+    e.preventDefault();
+    setLoading(true);
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/reset-password`,
+    });
+    setLoading(false);
+    if (error) {
+      toast.error("Couldn't send reset email", { description: error.message });
+      return;
+    }
+    toast.success("Reset link sent", { description: "Check your inbox for a password reset link." });
+    setMode("password");
+  }
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -128,6 +144,27 @@ function SignInForm() {
     }
     navigate({ to: "/dashboard", replace: true });
   }
+
+  if (mode === "forgot") {
+    return (
+      <form onSubmit={onForgot} className="space-y-4">
+        <p className="text-sm text-muted-foreground">
+          Enter your email and we'll send you a link to reset your password.
+        </p>
+        <div className="space-y-1.5">
+          <Label htmlFor="forgot-email">Email</Label>
+          <Input id="forgot-email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="email" />
+        </div>
+        <Button type="submit" disabled={loading} className="w-full bg-[image:var(--gradient-primary)] text-primary-foreground hover:opacity-90">
+          {loading ? "Sending…" : "Send reset link"}
+        </Button>
+        <button type="button" onClick={() => setMode("password")} className="w-full text-xs text-muted-foreground hover:text-foreground">
+          Back to sign in
+        </button>
+      </form>
+    );
+  }
+
   return (
     <form onSubmit={onSubmit} className="space-y-4">
       <div className="space-y-1.5">
@@ -135,7 +172,12 @@ function SignInForm() {
         <Input id="signin-email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="email" />
       </div>
       <div className="space-y-1.5">
-        <Label htmlFor="signin-password">Password</Label>
+        <div className="flex items-center justify-between">
+          <Label htmlFor="signin-password">Password</Label>
+          <button type="button" onClick={() => setMode("forgot")} className="text-xs text-muted-foreground hover:text-foreground">
+            Forgot password?
+          </button>
+        </div>
         <Input id="signin-password" type="password" required value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="current-password" />
       </div>
       <Button type="submit" disabled={loading} className="w-full bg-[image:var(--gradient-primary)] text-primary-foreground hover:opacity-90">
