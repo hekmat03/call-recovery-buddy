@@ -173,3 +173,64 @@ export const listMissedCalls = createServerFn({ method: "GET" })
     if (error) throw error;
     return calls ?? [];
   });
+
+const UpdateBusinessInput = z.object({
+  businessId: z.string().uuid(),
+  name: z.string().trim().min(1).max(120),
+  industry: z.string().trim().max(60).nullable().optional(),
+  phone: z.string().trim().max(40).nullable().optional(),
+  serviceArea: z.string().trim().max(160).nullable().optional(),
+  businessHours: z.string().trim().max(160).nullable().optional(),
+});
+
+export const updateBusiness = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) => UpdateBusinessInput.parse(input))
+  .handler(async ({ context, data }) => {
+    const { error } = await context.supabase
+      .from("businesses")
+      .update({
+        company_name: data.name,
+        industry: data.industry ?? null,
+        phone_number: data.phone ?? null,
+        service_area: data.serviceArea ?? null,
+        business_hours: data.businessHours ?? null,
+      })
+      .eq("id", data.businessId);
+    if (error) throw error;
+    return { ok: true };
+  });
+
+const UpdateLeadStatusInput = z.object({
+  leadId: z.string().uuid(),
+  status: z.enum(["new", "engaged", "booked", "lost"]),
+});
+
+export const updateLeadStatus = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) => UpdateLeadStatusInput.parse(input))
+  .handler(async ({ context, data }) => {
+    const { error } = await context.supabase
+      .from("leads")
+      .update({ status: data.status })
+      .eq("id", data.leadId);
+    if (error) throw error;
+    return { ok: true };
+  });
+
+const UpdateCallStatusInput = z.object({
+  callId: z.string().uuid(),
+  status: z.enum(["pending", "contacted", "recovered", "lost"]),
+});
+
+export const updateMissedCallStatus = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) => UpdateCallStatusInput.parse(input))
+  .handler(async ({ context, data }) => {
+    const { error } = await context.supabase
+      .from("missed_calls")
+      .update({ status: data.status })
+      .eq("id", data.callId);
+    if (error) throw error;
+    return { ok: true };
+  });
