@@ -156,8 +156,8 @@ function Nav() {
           <a href="#pricing" className="hover:text-foreground transition-colors">Pricing</a>
         </div>
         <div className="flex items-center gap-2">
-          <Link to="/auth" className="hidden sm:inline-block text-sm text-muted-foreground hover:text-foreground transition-colors px-3">Sign in</Link>
-          <Link to="/auth">
+          <Link to="/login" className="hidden sm:inline-block text-sm text-muted-foreground hover:text-foreground transition-colors px-3">Sign in</Link>
+          <Link to="/signup">
             <Button size="sm" className="rounded-full bg-gradient-to-r from-primary to-primary-glow text-primary-foreground hover:opacity-90 shadow-[0_0_30px_-5px_var(--primary)]">
               Start free <ArrowRight className="size-3.5 ml-1" />
             </Button>
@@ -211,7 +211,7 @@ function Hero() {
 
         <Reveal delay={0.5}>
           <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-3">
-            <Link to="/auth">
+            <Link to="/signup">
               <Button size="lg" className="rounded-full h-12 px-7 bg-gradient-to-r from-primary to-primary-glow text-primary-foreground shadow-[0_0_60px_-10px_var(--primary)] hover:scale-[1.02] transition-transform">
                 Start recovering revenue <ArrowRight className="size-4 ml-1" />
               </Button>
@@ -536,7 +536,7 @@ function Pricing() {
                     </li>
                   ))}
                 </ul>
-                <Link to="/auth" className="mt-8">
+                <Link to="/signup" className="mt-8">
                   <Button
                     className={`w-full rounded-full h-11 ${
                       t.highlight
@@ -580,7 +580,7 @@ function FinalCTA() {
           </p>
         </Reveal>
         <Reveal delay={0.35}>
-          <Link to="/auth">
+          <Link to="/signup">
             <Button size="lg" className="mt-10 rounded-full h-14 px-8 text-base bg-gradient-to-r from-primary to-primary-glow text-primary-foreground shadow-[0_0_80px_-10px_var(--primary)] hover:scale-[1.02] transition-transform">
               Claim your line <ArrowRight className="size-4 ml-2" />
             </Button>
