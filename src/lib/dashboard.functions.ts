@@ -49,22 +49,27 @@ export const getStats = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => BusinessScope.parse(input))
   .handler(async ({ context, data }) => {
-    const since = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+    // Fetch every lead for this business so totals are real, not 7-day-limited.
     const { data: leads, error } = await context.supabase
       .from("leads")
       .select("status, estimated_value, created_at")
-      .eq("business_id", data.businessId)
-      .gte("created_at", since);
+      .eq("business_id", data.businessId);
     if (error) throw error;
 
     const rows = leads ?? [];
+    const totalLeads = rows.length;
+    const newLeads = rows.filter((r) => r.status === "new").length;
+    const followUpsPending = rows.filter(
+      (r) => r.status === "contacted" || r.status === "qualified",
+    ).length;
     const booked = rows.filter((r) => r.status === "booked");
-    const engaged = rows.filter((r) =>
-      r.status === "contacted" || r.status === "qualified" || r.status === "booked" || r.status === "closed",
-    );
-    const revenue = booked.reduce((s, r) => s + (r.estimated_value ?? 0), 0);
+    const revenueRecovered = rows
+      .filter((r) => r.status === "booked" || r.status === "closed")
+      .reduce((s, r) => s + (r.estimated_value ?? 0), 0);
 
-    // Build a 7-day series
+    // 7-day recovered-revenue series for the trend chart
+    const since = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+    const recent = rows.filter((r) => r.created_at >= since);
     const days: { d: string; recovered: number; revenue: number }[] = [];
     const names = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
     for (let i = 6; i >= 0; i--) {
@@ -73,7 +78,7 @@ export const getStats = createServerFn({ method: "GET" })
       day.setDate(day.getDate() - i);
       const next = new Date(day);
       next.setDate(next.getDate() + 1);
-      const inDay = rows.filter(
+      const inDay = recent.filter(
         (r) => new Date(r.created_at) >= day && new Date(r.created_at) < next,
       );
       const dayBooked = inDay.filter((r) => r.status === "booked");
@@ -85,10 +90,21 @@ export const getStats = createServerFn({ method: "GET" })
     }
 
     return {
-      missed: rows.length,
-      conversations: engaged.length,
+      totalLeads,
+      newLeads,
+      followUpsPending,
       booked: booked.length,
-      revenue,
+      revenueRecovered,
+      // Back-compat aliases kept for any existing consumers
+      missed: totalLeads,
+      conversations: rows.filter(
+        (r) =>
+          r.status === "contacted" ||
+          r.status === "qualified" ||
+          r.status === "booked" ||
+          r.status === "closed",
+      ).length,
+      revenue: revenueRecovered,
       series: days,
     };
   });

@@ -2,8 +2,9 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import {
-  PhoneMissed,
-  MessageSquareText,
+  Users,
+  Sparkles,
+  Clock,
   CalendarCheck,
   DollarSign,
   ArrowRight,
@@ -57,11 +58,12 @@ function Overview({ businessId }: { businessId: string }) {
 
   return (
     <div className="space-y-6 p-5 lg:p-8">
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <StatCard icon={PhoneMissed} label="Missed calls (7d)" value={stats?.missed ?? "—"} tone="destructive" />
-        <StatCard icon={MessageSquareText} label="AI conversations" value={stats?.conversations ?? "—"} />
-        <StatCard icon={CalendarCheck} label="Jobs booked" value={stats?.booked ?? "—"} tone="accent" />
-        <StatCard icon={DollarSign} label="Revenue recovered" value={stats ? `$${stats.revenue.toLocaleString()}` : "—"} />
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
+        <StatCard icon={Users} label="Total leads" value={stats?.totalLeads ?? "—"} />
+        <StatCard icon={Sparkles} label="New leads" value={stats?.newLeads ?? "—"} tone="accent" />
+        <StatCard icon={Clock} label="Follow-ups pending" value={stats?.followUpsPending ?? "—"} tone="destructive" />
+        <StatCard icon={CalendarCheck} label="Appointments booked" value={stats?.booked ?? "—"} />
+        <StatCard icon={DollarSign} label="Revenue recovered" value={stats ? `$${stats.revenueRecovered.toLocaleString()}` : "—"} />
       </div>
 
       <Card className="border-border/60 p-6">
