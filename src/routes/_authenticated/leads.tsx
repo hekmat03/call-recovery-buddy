@@ -25,7 +25,7 @@ export const Route = createFileRoute("/_authenticated/leads")({
   component: LeadsPage,
 });
 
-const STATUSES = ["new", "engaged", "booked", "lost"] as const;
+const STATUSES = ["new", "contacted", "qualified", "booked", "closed", "lost"] as const;
 
 function LeadsPage() {
   const business = useMyBusiness();

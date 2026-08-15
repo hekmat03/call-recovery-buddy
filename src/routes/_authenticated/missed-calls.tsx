@@ -25,7 +25,7 @@ export const Route = createFileRoute("/_authenticated/missed-calls")({
   component: MissedCallsPage,
 });
 
-const CALL_STATUSES = ["pending", "contacted", "recovered", "lost"] as const;
+const CALL_STATUSES = ["new", "contacted", "qualified", "booked", "closed", "lost"] as const;
 
 function MissedCallsPage() {
   const business = useMyBusiness();
@@ -63,8 +63,8 @@ function CallLog({ businessId }: { businessId: string }) {
     );
   }, [calls, query]);
 
-  const recovered = calls.filter((c) => c.status === "recovered").length;
-  const pending = calls.filter((c) => c.status === "pending").length;
+  const recovered = calls.filter((c) => c.status === "booked").length;
+  const pending = calls.filter((c) => c.status === "new").length;
 
   return (
     <div className="space-y-4 p-5 lg:p-8">
