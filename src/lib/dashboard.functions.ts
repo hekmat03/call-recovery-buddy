@@ -59,7 +59,9 @@ export const getStats = createServerFn({ method: "GET" })
 
     const rows = leads ?? [];
     const booked = rows.filter((r) => r.status === "booked");
-    const engaged = rows.filter((r) => r.status === "engaged" || r.status === "booked");
+    const engaged = rows.filter((r) =>
+      r.status === "contacted" || r.status === "qualified" || r.status === "booked" || r.status === "closed",
+    );
     const revenue = booked.reduce((s, r) => s + (r.estimated_value ?? 0), 0);
 
     // Build a 7-day series
@@ -203,7 +205,7 @@ export const updateBusiness = createServerFn({ method: "POST" })
 
 const UpdateLeadStatusInput = z.object({
   leadId: z.string().uuid(),
-  status: z.enum(["new", "engaged", "booked", "lost"]),
+  status: z.enum(["new", "contacted", "qualified", "booked", "closed", "lost"]),
 });
 
 export const updateLeadStatus = createServerFn({ method: "POST" })
@@ -220,7 +222,7 @@ export const updateLeadStatus = createServerFn({ method: "POST" })
 
 const UpdateCallStatusInput = z.object({
   callId: z.string().uuid(),
-  status: z.enum(["pending", "contacted", "recovered", "lost"]),
+  status: z.enum(["new", "contacted", "qualified", "booked", "closed", "lost"]),
 });
 
 export const updateMissedCallStatus = createServerFn({ method: "POST" })

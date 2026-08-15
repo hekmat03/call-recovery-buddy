@@ -101,7 +101,7 @@ export type Database = {
           customer_phone: string
           estimated_value: number
           id: string
-          lead_source: string
+          lead_source: Database["public"]["Enums"]["lead_source"]
           notes: string | null
           status: Database["public"]["Enums"]["lead_status"]
           updated_at: string
@@ -114,7 +114,7 @@ export type Database = {
           customer_phone: string
           estimated_value?: number
           id?: string
-          lead_source?: string
+          lead_source?: Database["public"]["Enums"]["lead_source"]
           notes?: string | null
           status?: Database["public"]["Enums"]["lead_status"]
           updated_at?: string
@@ -127,7 +127,7 @@ export type Database = {
           customer_phone?: string
           estimated_value?: number
           id?: string
-          lead_source?: string
+          lead_source?: Database["public"]["Enums"]["lead_source"]
           notes?: string | null
           status?: Database["public"]["Enums"]["lead_status"]
           updated_at?: string
@@ -218,8 +218,21 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      lead_status: "new" | "engaged" | "booked" | "lost"
-      missed_call_status: "pending" | "contacted" | "recovered" | "lost"
+      lead_source: "missed_call" | "website_chat" | "manual_entry" | "referral"
+      lead_status:
+        | "new"
+        | "contacted"
+        | "qualified"
+        | "booked"
+        | "closed"
+        | "lost"
+      missed_call_status:
+        | "new"
+        | "contacted"
+        | "qualified"
+        | "booked"
+        | "closed"
+        | "lost"
       msg_sender: "customer" | "ai" | "business"
     }
     CompositeTypes: {
@@ -348,8 +361,23 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      lead_status: ["new", "engaged", "booked", "lost"],
-      missed_call_status: ["pending", "contacted", "recovered", "lost"],
+      lead_source: ["missed_call", "website_chat", "manual_entry", "referral"],
+      lead_status: [
+        "new",
+        "contacted",
+        "qualified",
+        "booked",
+        "closed",
+        "lost",
+      ],
+      missed_call_status: [
+        "new",
+        "contacted",
+        "qualified",
+        "booked",
+        "closed",
+        "lost",
+      ],
       msg_sender: ["customer", "ai", "business"],
     },
   },

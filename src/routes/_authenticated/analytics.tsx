@@ -16,7 +16,7 @@ import {
 import { CalendarCheck, DollarSign, MessageSquareText, Percent } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { AppShell, NoBusiness, useMyBusiness } from "@/components/app/shell";
-import { StatCard } from "@/components/app/bits";
+import { StatCard, sourceLabel, statusLabel } from "@/components/app/bits";
 import { getStats, listLeads } from "@/lib/dashboard.functions";
 
 export const Route = createFileRoute("/_authenticated/analytics")({
@@ -53,12 +53,12 @@ function AnalyticsBody({ businessId }: { businessId: string }) {
   const bySource = useMemo(() => {
     const map = new Map<string, number>();
     for (const l of leads) map.set(l.lead_source ?? "unknown", (map.get(l.lead_source ?? "unknown") ?? 0) + 1);
-    return [...map.entries()].map(([source, count]) => ({ source, count }));
+    return [...map.entries()].map(([source, count]) => ({ source, label: sourceLabel(source), count }));
   }, [leads]);
 
   const byStatus = useMemo(() => {
-    const order = ["new", "engaged", "booked", "lost"];
-    return order.map((s) => ({ status: s, count: leads.filter((l) => l.status === s).length }));
+    const order = ["new", "contacted", "qualified", "booked", "closed", "lost"];
+    return order.map((s) => ({ status: s, label: statusLabel(s), count: leads.filter((l) => l.status === s).length }));
   }, [leads]);
 
   const recoveryRate = stats && stats.missed > 0 ? Math.round((stats.booked / stats.missed) * 100) : 0;
@@ -100,7 +100,7 @@ function AnalyticsBody({ businessId }: { businessId: string }) {
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={bySource}>
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-                <XAxis dataKey="source" stroke="var(--muted-foreground)" fontSize={11} />
+                <XAxis dataKey="label" stroke="var(--muted-foreground)" fontSize={11} />
                 <YAxis stroke="var(--muted-foreground)" fontSize={11} allowDecimals={false} />
                 <Tooltip contentStyle={{ background: "var(--card)", border: "1px solid var(--border)", borderRadius: 8, fontSize: 12 }} />
                 <Bar dataKey="count" fill="var(--primary)" radius={[6, 6, 0, 0]} />
@@ -114,7 +114,7 @@ function AnalyticsBody({ businessId }: { businessId: string }) {
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={byStatus}>
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-                <XAxis dataKey="status" stroke="var(--muted-foreground)" fontSize={11} />
+                <XAxis dataKey="label" stroke="var(--muted-foreground)" fontSize={11} />
                 <YAxis stroke="var(--muted-foreground)" fontSize={11} allowDecimals={false} />
                 <Tooltip contentStyle={{ background: "var(--card)", border: "1px solid var(--border)", borderRadius: 8, fontSize: 12 }} />
                 <Bar dataKey="count" fill="var(--accent)" radius={[6, 6, 0, 0]} />

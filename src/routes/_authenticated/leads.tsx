@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
 import { AppShell, NoBusiness, useMyBusiness } from "@/components/app/shell";
-import { StatusPill, timeAgo } from "@/components/app/bits";
+import { StatusPill, sourceLabel, timeAgo } from "@/components/app/bits";
 import { listLeads, updateLeadStatus } from "@/lib/dashboard.functions";
 
 export const Route = createFileRoute("/_authenticated/leads")({
@@ -25,7 +25,7 @@ export const Route = createFileRoute("/_authenticated/leads")({
   component: LeadsPage,
 });
 
-const STATUSES = ["new", "engaged", "booked", "lost"] as const;
+const STATUSES = ["new", "contacted", "qualified", "booked", "closed", "lost"] as const;
 
 function LeadsPage() {
   const business = useMyBusiness();
@@ -114,7 +114,7 @@ function LeadsTable({ businessId }: { businessId: string }) {
                   <div>{l.customer_phone}</div>
                   <div className="text-xs">{l.customer_email ?? "—"}</div>
                 </td>
-                <td className="px-4 py-3 capitalize text-muted-foreground">{l.lead_source ?? "—"}</td>
+                <td className="px-4 py-3 text-muted-foreground">{l.lead_source ? sourceLabel(l.lead_source) : "—"}</td>
                 <td className="px-4 py-3">${l.estimated_value.toLocaleString()}</td>
                 <td className="px-4 py-3 text-muted-foreground">{timeAgo(l.created_at)}</td>
                 <td className="px-4 py-3">
