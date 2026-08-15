@@ -4,18 +4,43 @@ import { Card } from "@/components/ui/card";
 export function StatusPill({ status }: { status: string }) {
   const map: Record<string, string> = {
     new: "bg-secondary text-secondary-foreground",
-    engaged: "bg-primary/15 text-primary",
-    booked: "bg-accent/15 text-accent",
+    contacted: "bg-primary/15 text-primary",
+    qualified: "bg-accent/15 text-accent",
+    booked: "bg-primary text-primary-foreground",
+    closed: "bg-secondary text-secondary-foreground",
     lost: "bg-destructive/15 text-destructive",
     pending: "bg-secondary text-secondary-foreground",
-    contacted: "bg-primary/15 text-primary",
     recovered: "bg-accent/15 text-accent",
   };
   return (
-    <span className={`rounded-full px-2 py-0.5 text-[10px] font-medium capitalize ${map[status] ?? "bg-secondary"}`}>
-      {status}
+    <span className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${statusLabel(status)} ${map[status] ?? "bg-secondary"}`}>
+      {statusLabel(status)}
     </span>
   );
+}
+
+export function statusLabel(status: string) {
+  const labels: Record<string, string> = {
+    new: "New",
+    contacted: "Contacted",
+    qualified: "Qualified",
+    booked: "Appointment booked",
+    closed: "Closed",
+    lost: "Lost",
+    pending: "New",
+    recovered: "Booked",
+  };
+  return labels[status] ?? status;
+}
+
+export function sourceLabel(source: string) {
+  const labels: Record<string, string> = {
+    missed_call: "Missed call",
+    website_chat: "Website chat",
+    manual_entry: "Manual entry",
+    referral: "Referral",
+  };
+  return labels[source] ?? source;
 }
 
 export function StatCard({
