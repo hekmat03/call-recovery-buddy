@@ -57,7 +57,7 @@ function AnalyticsBody({ businessId }: { businessId: string }) {
   }, [leads]);
 
   const byStatus = useMemo(() => {
-    const order = ["new", "engaged", "booked", "lost"];
+    const order = ["new", "contacted", "qualified", "booked", "closed", "lost"];
     return order.map((s) => ({ status: s, count: leads.filter((l) => l.status === s).length }));
   }, [leads]);
 
