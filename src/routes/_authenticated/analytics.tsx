@@ -100,7 +100,7 @@ function AnalyticsBody({ businessId }: { businessId: string }) {
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={bySource}>
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-                <XAxis dataKey="source" stroke="var(--muted-foreground)" fontSize={11} />
+                <XAxis dataKey="label" stroke="var(--muted-foreground)" fontSize={11} />
                 <YAxis stroke="var(--muted-foreground)" fontSize={11} allowDecimals={false} />
                 <Tooltip contentStyle={{ background: "var(--card)", border: "1px solid var(--border)", borderRadius: 8, fontSize: 12 }} />
                 <Bar dataKey="count" fill="var(--primary)" radius={[6, 6, 0, 0]} />
@@ -114,7 +114,7 @@ function AnalyticsBody({ businessId }: { businessId: string }) {
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={byStatus}>
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-                <XAxis dataKey="status" stroke="var(--muted-foreground)" fontSize={11} />
+                <XAxis dataKey="label" stroke="var(--muted-foreground)" fontSize={11} />
                 <YAxis stroke="var(--muted-foreground)" fontSize={11} allowDecimals={false} />
                 <Tooltip contentStyle={{ background: "var(--card)", border: "1px solid var(--border)", borderRadius: 8, fontSize: 12 }} />
                 <Bar dataKey="count" fill="var(--accent)" radius={[6, 6, 0, 0]} />
