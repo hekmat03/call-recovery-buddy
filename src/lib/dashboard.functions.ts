@@ -205,7 +205,7 @@ export const updateBusiness = createServerFn({ method: "POST" })
 
 const UpdateLeadStatusInput = z.object({
   leadId: z.string().uuid(),
-  status: z.enum(["new", "engaged", "booked", "lost"]),
+  status: z.enum(["new", "contacted", "qualified", "booked", "closed", "lost"]),
 });
 
 export const updateLeadStatus = createServerFn({ method: "POST" })
@@ -222,7 +222,7 @@ export const updateLeadStatus = createServerFn({ method: "POST" })
 
 const UpdateCallStatusInput = z.object({
   callId: z.string().uuid(),
-  status: z.enum(["pending", "contacted", "recovered", "lost"]),
+  status: z.enum(["new", "contacted", "qualified", "booked", "closed", "lost"]),
 });
 
 export const updateMissedCallStatus = createServerFn({ method: "POST" })
