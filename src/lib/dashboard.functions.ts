@@ -59,7 +59,9 @@ export const getStats = createServerFn({ method: "GET" })
 
     const rows = leads ?? [];
     const booked = rows.filter((r) => r.status === "booked");
-    const engaged = rows.filter((r) => r.status === "engaged" || r.status === "booked");
+    const engaged = rows.filter((r) =>
+      r.status === "contacted" || r.status === "qualified" || r.status === "booked" || r.status === "closed",
+    );
     const revenue = booked.reduce((s, r) => s + (r.estimated_value ?? 0), 0);
 
     // Build a 7-day series
