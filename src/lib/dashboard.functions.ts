@@ -95,6 +95,28 @@ export const getStats = createServerFn({ method: "GET" })
       followUpsPending,
       booked: booked.length,
       revenueRecovered,
+      // 30-day leads-over-time series + status distribution
+      leadsSeries: (() => {
+        const out: { date: string; label: string; leads: number }[] = [];
+        for (let i = 29; i >= 0; i--) {
+          const day = new Date();
+          day.setHours(0, 0, 0, 0);
+          day.setDate(day.getDate() - i);
+          const next = new Date(day);
+          next.setDate(next.getDate() + 1);
+          out.push({
+            date: day.toISOString().slice(0, 10),
+            label: `${day.getMonth() + 1}/${day.getDate()}`,
+            leads: rows.filter(
+              (r) => new Date(r.created_at) >= day && new Date(r.created_at) < next,
+            ).length,
+          });
+        }
+        return out;
+      })(),
+      statusDistribution: (
+        ["new", "contacted", "qualified", "booked", "closed", "lost"] as const
+      ).map((s) => ({ status: s, count: rows.filter((r) => r.status === s).length })),
       // Back-compat aliases kept for any existing consumers
       missed: totalLeads,
       conversations: rows.filter(
@@ -129,6 +151,28 @@ const SendMessageInput = z.object({
   businessId: z.string().uuid(),
   body: z.string().trim().min(1).max(1000),
 });
+
+export const listRecentConversations = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) => BusinessScope.parse(input))
+  .handler(async ({ context, data }) => {
+    const { data: msgs, error } = await context.supabase
+      .from("conversations")
+      .select("id, sender, message, created_at, lead_id, leads(customer_name, customer_phone)")
+      .eq("business_id", data.businessId)
+      .order("created_at", { ascending: false })
+      .limit(5);
+    if (error) throw error;
+    return (msgs ?? []).map((m) => ({
+      id: m.id,
+      leadId: m.lead_id,
+      sender: m.sender,
+      message: m.message,
+      createdAt: m.created_at,
+      customerName: (m.leads as { customer_name: string | null } | null)?.customer_name ?? null,
+      customerPhone: (m.leads as { customer_phone: string | null } | null)?.customer_phone ?? null,
+    }));
+  });
 
 export const sendMessage = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])

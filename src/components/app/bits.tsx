@@ -13,9 +13,31 @@ export function StatusPill({ status }: { status: string }) {
     recovered: "bg-accent/15 text-accent",
   };
   return (
-    <span className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${statusLabel(status)} ${map[status] ?? "bg-secondary"}`}>
+    <span className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${map[status] ?? "bg-secondary"}`}>
       {statusLabel(status)}
     </span>
+  );
+}
+
+export function EmptyState({
+  icon: Icon,
+  title,
+  hint,
+}: {
+  icon?: React.ComponentType<{ className?: string }>;
+  title: string;
+  hint?: string;
+}) {
+  return (
+    <div className="flex flex-col items-center justify-center gap-2 py-10 text-center">
+      {Icon && (
+        <div className="grid h-10 w-10 place-items-center rounded-full bg-secondary text-muted-foreground">
+          <Icon className="h-4 w-4" />
+        </div>
+      )}
+      <p className="text-sm font-medium">{title}</p>
+      {hint && <p className="max-w-xs text-xs text-muted-foreground">{hint}</p>}
+    </div>
   );
 }
 
