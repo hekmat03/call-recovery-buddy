@@ -152,6 +152,28 @@ const SendMessageInput = z.object({
   body: z.string().trim().min(1).max(1000),
 });
 
+export const listRecentConversations = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) => BusinessScope.parse(input))
+  .handler(async ({ context, data }) => {
+    const { data: msgs, error } = await context.supabase
+      .from("conversations")
+      .select("id, sender, message, created_at, lead_id, leads(customer_name, customer_phone)")
+      .eq("business_id", data.businessId)
+      .order("created_at", { ascending: false })
+      .limit(5);
+    if (error) throw error;
+    return (msgs ?? []).map((m) => ({
+      id: m.id,
+      leadId: m.lead_id,
+      sender: m.sender,
+      message: m.message,
+      createdAt: m.created_at,
+      customerName: (m.leads as { customer_name: string | null } | null)?.customer_name ?? null,
+      customerPhone: (m.leads as { customer_phone: string | null } | null)?.customer_phone ?? null,
+    }));
+  });
+
 export const sendMessage = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => SendMessageInput.parse(input))
