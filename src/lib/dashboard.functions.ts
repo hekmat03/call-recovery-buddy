@@ -272,11 +272,25 @@ export const updateLeadStatus = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => UpdateLeadStatusInput.parse(input))
   .handler(async ({ context, data }) => {
+    const { data: prev } = await context.supabase
+      .from("leads")
+      .select("status, business_id")
+      .eq("id", data.leadId)
+      .single();
     const { error } = await context.supabase
       .from("leads")
       .update({ status: data.status })
       .eq("id", data.leadId);
     if (error) throw error;
+    if (prev && prev.status !== data.status) {
+      await context.supabase.from("lead_activities").insert({
+        lead_id: data.leadId,
+        business_id: prev.business_id,
+        kind: "status_change",
+        from_status: prev.status,
+        to_status: data.status,
+      });
+    }
     return { ok: true };
   });
 
@@ -295,4 +309,217 @@ export const updateMissedCallStatus = createServerFn({ method: "POST" })
       .eq("id", data.callId);
     if (error) throw error;
     return { ok: true };
+  });
+
+const CreateMissedCallInput = z.object({
+  businessId: z.string().uuid(),
+  customerName: z.string().trim().max(120).optional(),
+  customerPhone: z.string().trim().min(3).max(40),
+  dateTime: z.string().optional(),
+  source: z.string().trim().min(1).max(40).default("phone"),
+  status: z.enum(["new", "contacted", "qualified", "booked", "closed", "lost"]).default("new"),
+  notes: z.string().trim().max(1000).optional(),
+  createLead: z.boolean().default(true),
+});
+
+export const createMissedCall = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) => CreateMissedCallInput.parse(input))
+  .handler(async ({ context, data }) => {
+    const { data: call, error } = await context.supabase
+      .from("missed_calls")
+      .insert({
+        business_id: data.businessId,
+        customer_name: data.customerName || null,
+        customer_phone: data.customerPhone,
+        date_time: data.dateTime ? new Date(data.dateTime).toISOString() : new Date().toISOString(),
+        source: data.source,
+        status: data.status,
+        notes: data.notes || null,
+      })
+      .select("id")
+      .single();
+    if (error) throw error;
+
+    if (data.createLead) {
+      const { data: lead } = await context.supabase
+        .from("leads")
+        .insert({
+          business_id: data.businessId,
+          customer_name: data.customerName || null,
+          customer_phone: data.customerPhone,
+          lead_source: "missed_call" as const,
+          status: data.status,
+          notes: data.notes || null,
+        })
+        .select("id")
+        .single();
+      if (lead) {
+        await context.supabase.from("lead_activities").insert({
+          lead_id: lead.id,
+          business_id: data.businessId,
+          kind: "created",
+          to_status: data.status,
+          note: "Lead created from missed call",
+        });
+      }
+    }
+    return call;
+  });
+
+export const getLead = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) => LeadIdInput.parse(input))
+  .handler(async ({ context, data }) => {
+    const { data: lead, error } = await context.supabase
+      .from("leads")
+      .select(
+        "id, business_id, customer_name, customer_phone, customer_email, lead_source, status, estimated_value, notes, created_at, updated_at",
+      )
+      .eq("id", data.leadId)
+      .maybeSingle();
+    if (error) throw error;
+    return lead;
+  });
+
+export const listLeadActivity = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) => LeadIdInput.parse(input))
+  .handler(async ({ context, data }) => {
+    const { data: rows, error } = await context.supabase
+      .from("lead_activities")
+      .select("id, kind, from_status, to_status, note, created_at")
+      .eq("lead_id", data.leadId)
+      .order("created_at", { ascending: false });
+    if (error) throw error;
+    return rows ?? [];
+  });
+
+const UpdateLeadInput = z.object({
+  leadId: z.string().uuid(),
+  customerName: z.string().trim().max(120).nullable().optional(),
+  customerPhone: z.string().trim().min(3).max(40),
+  customerEmail: z.string().trim().max(160).nullable().optional(),
+  leadSource: z.enum(["missed_call", "website_chat", "manual_entry", "referral"]),
+  estimatedValue: z.number().min(0).max(10_000_000),
+});
+
+export const updateLead = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) => UpdateLeadInput.parse(input))
+  .handler(async ({ context, data }) => {
+    const { data: lead, error } = await context.supabase
+      .from("leads")
+      .update({
+        customer_name: data.customerName || null,
+        customer_phone: data.customerPhone,
+        customer_email: data.customerEmail || null,
+        lead_source: data.leadSource,
+        estimated_value: data.estimatedValue,
+      })
+      .eq("id", data.leadId)
+      .select("business_id")
+      .single();
+    if (error) throw error;
+    await context.supabase.from("lead_activities").insert({
+      lead_id: data.leadId,
+      business_id: lead.business_id,
+      kind: "details_updated",
+      note: "Customer details updated",
+    });
+    return { ok: true };
+  });
+
+const AppendNoteInput = z.object({
+  leadId: z.string().uuid(),
+  note: z.string().trim().min(1).max(2000),
+});
+
+export const appendLeadNote = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) => AppendNoteInput.parse(input))
+  .handler(async ({ context, data }) => {
+    const { data: lead, error: readError } = await context.supabase
+      .from("leads")
+      .select("notes, business_id")
+      .eq("id", data.leadId)
+      .single();
+    if (readError) throw readError;
+
+    const stamp = new Date().toISOString();
+    const entry = `[${stamp}] ${data.note}`;
+    const next = lead.notes ? `${lead.notes}\n${entry}` : entry;
+
+    const { error } = await context.supabase
+      .from("leads")
+      .update({ notes: next })
+      .eq("id", data.leadId);
+    if (error) throw error;
+
+    await context.supabase.from("lead_activities").insert({
+      lead_id: data.leadId,
+      business_id: lead.business_id,
+      kind: "note",
+      note: data.note,
+    });
+    return { notes: next };
+  });
+
+const SimulateInput = z.object({
+  leadId: z.string().uuid(),
+  businessId: z.string().uuid(),
+  customerMessage: z.string().trim().min(1).max(1000),
+});
+
+// Simulated AI follow-up: no external API calls. A deterministic reply is
+// picked from local templates and stored in the conversations table.
+export const simulateAiFollowUp = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) => SimulateInput.parse(input))
+  .handler(async ({ context, data }) => {
+    const { error: custError } = await context.supabase.from("conversations").insert({
+      lead_id: data.leadId,
+      business_id: data.businessId,
+      sender: "customer" as const,
+      message: data.customerMessage,
+    });
+    if (custError) throw custError;
+
+    const text = data.customerMessage.toLowerCase();
+    let reply =
+      "Thanks for the details! I can get a technician out to you — would tomorrow morning or afternoon work better?";
+    if (/(price|cost|quote|how much|estimate)/.test(text)) {
+      reply =
+        "Great question — most jobs like this land between $300 and $1,200 depending on what we find. I can book a free on-site estimate. What day works for you?";
+    } else if (/(emergency|urgent|asap|leak|flood|now)/.test(text)) {
+      reply =
+        "That sounds urgent — I'm flagging this as priority. Can someone be on site in the next 2 hours? Reply YES and I'll dispatch right away.";
+    } else if (/(tomorrow|monday|tuesday|wednesday|thursday|friday|saturday|sunday|\d{1,2}\s?(am|pm))/.test(text)) {
+      reply =
+        "Perfect — I've penciled that in and you'll get a confirmation text shortly. Anything we should know before we arrive?";
+    } else if (/(no|not interested|stop)/.test(text)) {
+      reply =
+        "Totally understood — I'll close this out. If anything changes, just text this number and we'll pick right back up.";
+    }
+
+    const { data: aiMsg, error: aiError } = await context.supabase
+      .from("conversations")
+      .insert({
+        lead_id: data.leadId,
+        business_id: data.businessId,
+        sender: "ai" as const,
+        message: reply,
+      })
+      .select("id, sender, message, created_at")
+      .single();
+    if (aiError) throw aiError;
+
+    await context.supabase.from("lead_activities").insert({
+      lead_id: data.leadId,
+      business_id: data.businessId,
+      kind: "ai_followup",
+      note: "AI follow-up simulated",
+    });
+
+    return aiMsg;
   });
