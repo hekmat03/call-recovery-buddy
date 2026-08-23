@@ -92,6 +92,54 @@ export type Database = {
           },
         ]
       }
+      lead_activities: {
+        Row: {
+          business_id: string
+          created_at: string
+          from_status: string | null
+          id: string
+          kind: string
+          lead_id: string
+          note: string | null
+          to_status: string | null
+        }
+        Insert: {
+          business_id: string
+          created_at?: string
+          from_status?: string | null
+          id?: string
+          kind?: string
+          lead_id: string
+          note?: string | null
+          to_status?: string | null
+        }
+        Update: {
+          business_id?: string
+          created_at?: string
+          from_status?: string | null
+          id?: string
+          kind?: string
+          lead_id?: string
+          note?: string | null
+          to_status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lead_activities_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lead_activities_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "leads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       leads: {
         Row: {
           business_id: string
