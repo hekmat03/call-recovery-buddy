@@ -10,41 +10,53 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "14.5"
+    PostgrestVersion: "14.17"
   }
   public: {
     Tables: {
       businesses: {
         Row: {
+          ai_tone: string
           business_hours: string | null
           company_name: string
           created_at: string
+          description: string | null
+          faqs: Json
           id: string
           industry: string | null
           phone_number: string | null
           service_area: string | null
+          services_offered: string | null
           updated_at: string
           user_id: string
         }
         Insert: {
+          ai_tone?: string
           business_hours?: string | null
           company_name: string
           created_at?: string
+          description?: string | null
+          faqs?: Json
           id?: string
           industry?: string | null
           phone_number?: string | null
           service_area?: string | null
+          services_offered?: string | null
           updated_at?: string
           user_id: string
         }
         Update: {
+          ai_tone?: string
           business_hours?: string | null
           company_name?: string
           created_at?: string
+          description?: string | null
+          faqs?: Json
           id?: string
           industry?: string | null
           phone_number?: string | null
           service_area?: string | null
+          services_offered?: string | null
           updated_at?: string
           user_id?: string
         }
@@ -55,6 +67,7 @@ export type Database = {
           business_id: string
           created_at: string
           id: string
+          is_demo: boolean
           lead_id: string
           message: string
           sender: Database["public"]["Enums"]["msg_sender"]
@@ -63,6 +76,7 @@ export type Database = {
           business_id: string
           created_at?: string
           id?: string
+          is_demo?: boolean
           lead_id: string
           message: string
           sender: Database["public"]["Enums"]["msg_sender"]
@@ -71,6 +85,7 @@ export type Database = {
           business_id?: string
           created_at?: string
           id?: string
+          is_demo?: boolean
           lead_id?: string
           message?: string
           sender?: Database["public"]["Enums"]["msg_sender"]
@@ -98,6 +113,7 @@ export type Database = {
           created_at: string
           from_status: string | null
           id: string
+          is_demo: boolean
           kind: string
           lead_id: string
           note: string | null
@@ -108,6 +124,7 @@ export type Database = {
           created_at?: string
           from_status?: string | null
           id?: string
+          is_demo?: boolean
           kind?: string
           lead_id: string
           note?: string | null
@@ -118,6 +135,7 @@ export type Database = {
           created_at?: string
           from_status?: string | null
           id?: string
+          is_demo?: boolean
           kind?: string
           lead_id?: string
           note?: string | null
@@ -149,8 +167,10 @@ export type Database = {
           customer_phone: string
           estimated_value: number
           id: string
+          is_demo: boolean
           lead_source: Database["public"]["Enums"]["lead_source"]
           notes: string | null
+          qualification: Json
           status: Database["public"]["Enums"]["lead_status"]
           updated_at: string
         }
@@ -162,8 +182,10 @@ export type Database = {
           customer_phone: string
           estimated_value?: number
           id?: string
+          is_demo?: boolean
           lead_source?: Database["public"]["Enums"]["lead_source"]
           notes?: string | null
+          qualification?: Json
           status?: Database["public"]["Enums"]["lead_status"]
           updated_at?: string
         }
@@ -175,8 +197,10 @@ export type Database = {
           customer_phone?: string
           estimated_value?: number
           id?: string
+          is_demo?: boolean
           lead_source?: Database["public"]["Enums"]["lead_source"]
           notes?: string | null
+          qualification?: Json
           status?: Database["public"]["Enums"]["lead_status"]
           updated_at?: string
         }
@@ -198,6 +222,7 @@ export type Database = {
           customer_phone: string
           date_time: string
           id: string
+          is_demo: boolean
           notes: string | null
           source: string
           status: Database["public"]["Enums"]["missed_call_status"]
@@ -210,6 +235,7 @@ export type Database = {
           customer_phone: string
           date_time?: string
           id?: string
+          is_demo?: boolean
           notes?: string | null
           source?: string
           status?: Database["public"]["Enums"]["missed_call_status"]
@@ -222,6 +248,7 @@ export type Database = {
           customer_phone?: string
           date_time?: string
           id?: string
+          is_demo?: boolean
           notes?: string | null
           source?: string
           status?: Database["public"]["Enums"]["missed_call_status"]
