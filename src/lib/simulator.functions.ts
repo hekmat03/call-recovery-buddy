@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { z } from "zod";
+import type { Json, TablesUpdate } from "@/integrations/supabase/types";
 import {
   QUALIFICATION_KEYS,
   askQuestion,
