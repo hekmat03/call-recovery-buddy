@@ -197,7 +197,7 @@ export const advanceQualification = createServerFn({ method: "POST" })
       becameQualified = true;
     }
 
-    const update: Record<string, unknown> = { qualification: q };
+    const update: TablesUpdate<"leads"> = { qualification: q };
 
     if (becameQualified) {
       const summary = QUALIFICATION_KEYS.map((k) => `${k}: ${q[k]}`).join(" | ");
