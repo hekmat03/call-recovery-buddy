@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { z } from "zod";
+import type { TablesUpdate } from "@/integrations/supabase/types";
 import {
   QUALIFICATION_KEYS,
   askQuestion,
@@ -197,7 +198,7 @@ export const advanceQualification = createServerFn({ method: "POST" })
       becameQualified = true;
     }
 
-    const update: Record<string, unknown> = { qualification: q };
+    const update: TablesUpdate<"leads"> = { qualification: q };
 
     if (becameQualified) {
       const summary = QUALIFICATION_KEYS.map((k) => `${k}: ${q[k]}`).join(" | ");
