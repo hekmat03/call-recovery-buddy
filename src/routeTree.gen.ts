@@ -15,6 +15,7 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuthenticatedWorkflowRouteImport } from './routes/_authenticated/workflow'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
 import { Route as AuthenticatedMissedCallsRouteImport } from './routes/_authenticated/missed-calls'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
@@ -51,6 +52,11 @@ const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedWorkflowRoute = AuthenticatedWorkflowRouteImport.update({
+  id: '/workflow',
+  path: '/workflow',
+  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
   id: '/settings',
@@ -102,6 +108,7 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/missed-calls': typeof AuthenticatedMissedCallsRoute
   '/settings': typeof AuthenticatedSettingsRoute
+  '/workflow': typeof AuthenticatedWorkflowRoute
   '/leads/$leadId': typeof AuthenticatedLeadsLeadIdRoute
   '/leads/': typeof AuthenticatedLeadsIndexRoute
 }
@@ -116,6 +123,7 @@ export interface FileRoutesByTo {
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/missed-calls': typeof AuthenticatedMissedCallsRoute
   '/settings': typeof AuthenticatedSettingsRoute
+  '/workflow': typeof AuthenticatedWorkflowRoute
   '/leads/$leadId': typeof AuthenticatedLeadsLeadIdRoute
   '/leads': typeof AuthenticatedLeadsIndexRoute
 }
@@ -132,6 +140,7 @@ export interface FileRoutesById {
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/missed-calls': typeof AuthenticatedMissedCallsRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
+  '/_authenticated/workflow': typeof AuthenticatedWorkflowRoute
   '/_authenticated/leads/$leadId': typeof AuthenticatedLeadsLeadIdRoute
   '/_authenticated/leads/': typeof AuthenticatedLeadsIndexRoute
 }
@@ -148,6 +157,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/missed-calls'
     | '/settings'
+    | '/workflow'
     | '/leads/$leadId'
     | '/leads/'
   fileRoutesByTo: FileRoutesByTo
@@ -162,6 +172,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/missed-calls'
     | '/settings'
+    | '/workflow'
     | '/leads/$leadId'
     | '/leads'
   id:
@@ -177,6 +188,7 @@ export interface FileRouteTypes {
     | '/_authenticated/dashboard'
     | '/_authenticated/missed-calls'
     | '/_authenticated/settings'
+    | '/_authenticated/workflow'
     | '/_authenticated/leads/$leadId'
     | '/_authenticated/leads/'
   fileRoutesById: FileRoutesById
@@ -233,6 +245,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/workflow': {
+      id: '/_authenticated/workflow'
+      path: '/workflow'
+      fullPath: '/workflow'
+      preLoaderRoute: typeof AuthenticatedWorkflowRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/settings': {
       id: '/_authenticated/settings'
@@ -292,6 +311,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedMissedCallsRoute: typeof AuthenticatedMissedCallsRoute
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
+  AuthenticatedWorkflowRoute: typeof AuthenticatedWorkflowRoute
   AuthenticatedLeadsLeadIdRoute: typeof AuthenticatedLeadsLeadIdRoute
   AuthenticatedLeadsIndexRoute: typeof AuthenticatedLeadsIndexRoute
 }
@@ -302,6 +322,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedMissedCallsRoute: AuthenticatedMissedCallsRoute,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
+  AuthenticatedWorkflowRoute: AuthenticatedWorkflowRoute,
   AuthenticatedLeadsLeadIdRoute: AuthenticatedLeadsLeadIdRoute,
   AuthenticatedLeadsIndexRoute: AuthenticatedLeadsIndexRoute,
 }
