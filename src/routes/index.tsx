@@ -421,49 +421,34 @@ function HowItWorks() {
   );
 }
 
-/* ---------- testimonials ---------- */
+/* ---------- benefits ---------- */
 
-const QUOTES = [
-  { q: "We recovered $47k in the first month. It answers faster than my front desk ever did.", n: "Marco Reyes", r: "Owner, Apex Roofing", tall: true },
-  { q: "Our booking rate on after-hours calls went from 12% to 61%.", n: "Priya Anand", r: "Ops, Northwind HVAC" },
-  { q: "It feels less like software and more like hiring an unshakably calm receptionist.", n: "Dr. Lena Osei", r: "Meridian Dental" },
-  { q: "The dashboard is the first ROI report I've actually read cover-to-cover.", n: "Jake Whitman", r: "Volt Electric" },
+const BENEFITS = [
+  { icon: Zap, title: "Fewer forgotten callers", body: "Missed calls land in one list instead of scattered voicemails and notepads." },
+  { icon: Clock, title: "Less admin after hours", body: "The first follow-up message and the qualifying questions are drafted for you." },
+  { icon: MessageSquareText, title: "Context before you call back", body: "Location, issue, timeline and insurance answers are on the lead before you dial." },
+  { icon: BarChart3, title: "A clearer picture", body: "See how many leads arrived, how many qualified, and what they were worth." },
 ];
 
-function Testimonials() {
+function Benefits() {
   return (
-    <section className="relative py-32">
+    <section id="benefits" className="relative py-32">
       <div className="max-w-6xl mx-auto px-6">
         <Reveal>
-          <Eyebrow>Field Reports</Eyebrow>
+          <Eyebrow>Benefits</Eyebrow>
           <h2 className="mt-5 text-4xl md:text-6xl font-semibold tracking-[-0.03em] leading-[1] max-w-3xl">
-            Operators who stopped
-            <span className="text-muted-foreground"> losing sleep.</span>
+            Built around the job
+            <span className="text-muted-foreground"> you already do.</span>
           </h2>
         </Reveal>
-
-        <div className="mt-16 grid md:grid-cols-4 gap-4 auto-rows-[minmax(220px,auto)]">
-          {QUOTES.map((q, i) => (
-            <Reveal
-              key={q.n}
-              delay={i * 0.08}
-              className={
-                i === 0
-                  ? "md:col-span-2 md:row-span-2"
-                  : i === 3
-                  ? "md:col-span-2"
-                  : ""
-              }
-            >
-              <figure className="h-full rounded-2xl border border-white/10 bg-gradient-to-br from-card/60 to-card/20 backdrop-blur p-8 flex flex-col justify-between hover:border-primary/40 transition-colors">
-                <blockquote className={`${i === 0 ? "text-2xl md:text-3xl" : "text-lg"} font-medium tracking-tight leading-snug`}>
-                  &ldquo;{q.q}&rdquo;
-                </blockquote>
-                <figcaption className="mt-8 text-sm">
-                  <div className="font-medium">{q.n}</div>
-                  <div className="text-muted-foreground">{q.r}</div>
-                </figcaption>
-              </figure>
+        <div className="mt-16 grid sm:grid-cols-2 gap-4">
+          {BENEFITS.map((b, i) => (
+            <Reveal key={b.title} delay={i * 0.07}>
+              <div className="h-full rounded-2xl border border-white/10 bg-gradient-to-br from-card/60 to-card/20 backdrop-blur p-8">
+                <b.icon className="size-5 text-primary" strokeWidth={1.5} />
+                <h3 className="mt-5 text-xl font-semibold tracking-tight">{b.title}</h3>
+                <p className="mt-2 text-sm text-muted-foreground leading-relaxed">{b.body}</p>
+              </div>
             </Reveal>
           ))}
         </div>
@@ -472,103 +457,71 @@ function Testimonials() {
   );
 }
 
-/* ---------- pricing ---------- */
+/* ---------- demo preview ---------- */
 
-const TIERS = [
-  {
-    name: "Starter",
-    price: "$79",
-    tag: "Solo operators",
-    features: ["Up to 200 recoveries / mo", "AI SMS agent", "Unified inbox", "Email support"],
-  },
-  {
-    name: "Growth",
-    price: "$249",
-    tag: "Growing crews",
-    features: ["Up to 1,500 recoveries / mo", "Auto-booking + calendar sync", "Team seats", "Priority support"],
-    highlight: true,
-  },
-  {
-    name: "Signature",
-    price: "Custom",
-    tag: "Multi-location",
-    features: ["Unlimited recoveries", "Dedicated AI training", "SLA + white-glove onboarding", "Named success partner"],
-    premium: true,
-  },
+const DEMO_THREAD = [
+  { from: "ai", text: "Hi, we noticed you called us. Sorry we missed your call. How can we help you today?" },
+  { from: "customer", text: "There's water coming through my kitchen ceiling." },
+  { from: "ai", text: "Thanks for letting us know. What's the address of the property?" },
+  { from: "customer", text: "42 Oak Street, Denver." },
+  { from: "ai", text: "Got it. How soon would you like someone to take a look?" },
+  { from: "customer", text: "Today if possible." },
 ];
 
-function Pricing() {
+function DemoPreview() {
   return (
-    <section id="pricing" className="relative py-32">
-      <div className="max-w-6xl mx-auto px-6">
+    <section id="demo" className="relative py-32 bg-gradient-to-b from-transparent via-black/40 to-transparent">
+      <div className="max-w-6xl mx-auto px-6 grid lg:grid-cols-2 gap-12 items-center">
         <Reveal>
-          <Eyebrow>Pricing</Eyebrow>
-          <h2 className="mt-5 text-4xl md:text-6xl font-semibold tracking-[-0.03em] leading-[1]">
-            Priced like software.
-            <br />
-            <span className="text-muted-foreground">Pays like a top rep.</span>
+          <Eyebrow>Demo preview</Eyebrow>
+          <h2 className="mt-5 text-4xl md:text-5xl font-semibold tracking-[-0.03em] leading-[1.05]">
+            See a follow-up
+            <span className="text-muted-foreground"> before you sign up.</span>
           </h2>
+          <p className="mt-6 max-w-md text-muted-foreground leading-relaxed">
+            Inside your account, one button fills a sample missed call, customer and
+            conversation so you can try everything without touching real customers.
+            Sample records are labelled Demo and can be removed whenever you like.
+          </p>
+          <ul className="mt-6 space-y-2 text-sm text-muted-foreground">
+            {["Sample missed call and lead", "Full follow-up conversation", "Clearly labelled and easy to delete"].map((t) => (
+              <li key={t} className="flex items-start gap-2">
+                <Check className="size-4 mt-0.5 text-primary" /> <span>{t}</span>
+              </li>
+            ))}
+          </ul>
+          <Link to="/signup">
+            <Button className="mt-8 rounded-full h-11 px-6 bg-gradient-to-r from-primary to-primary-glow text-primary-foreground">
+              Try the demo data <ArrowRight className="size-4 ml-1" />
+            </Button>
+          </Link>
         </Reveal>
 
-        <div className="mt-16 grid md:grid-cols-3 gap-4">
-          {TIERS.map((t, i) => (
-            <Reveal key={t.name} delay={i * 0.08}>
-              <div
-                className={`relative h-full rounded-2xl border p-8 flex flex-col ${
-                  t.premium
-                    ? "border-accent/50 bg-gradient-to-b from-accent/[0.08] to-transparent"
-                    : t.highlight
-                    ? "border-primary/50 bg-gradient-to-b from-primary/[0.12] to-transparent shadow-[0_30px_80px_-30px_var(--primary)]"
-                    : "border-white/10 bg-card/40"
-                }`}
-              >
-                {t.highlight && (
-                  <div className="absolute -top-3 left-8 text-[10px] uppercase tracking-[0.25em] bg-primary text-primary-foreground px-3 py-1 rounded-full">
-                    Most chosen
-                  </div>
-                )}
-                {t.premium && (
-                  <div className="absolute -top-3 left-8 text-[10px] uppercase tracking-[0.25em] bg-accent text-accent-foreground px-3 py-1 rounded-full">
-                    Signature
-                  </div>
-                )}
-                <div className="text-sm text-muted-foreground">{t.tag}</div>
-                <div className="mt-2 text-2xl font-semibold tracking-tight">{t.name}</div>
-                <div className="mt-6 flex items-baseline gap-1">
-                  <span
-                    className={`text-5xl font-semibold tracking-tighter ${
-                      t.premium ? "bg-gradient-to-br from-accent to-yellow-200 bg-clip-text text-transparent" : ""
-                    }`}
-                  >
-                    {t.price}
-                  </span>
-                  {t.price !== "Custom" && <span className="text-muted-foreground text-sm">/mo</span>}
+        <Reveal delay={0.15}>
+          <div className="rounded-3xl border border-white/10 bg-card/60 backdrop-blur-xl p-6 shadow-[0_40px_120px_-40px_var(--primary)]">
+            <div className="flex items-center justify-between text-[11px] uppercase tracking-widest text-muted-foreground">
+              <span>Follow-up conversation</span>
+              <span className="rounded-full border border-primary/40 px-2 py-0.5 text-primary">Demo</span>
+            </div>
+            <div className="mt-5 space-y-3 text-sm">
+              {DEMO_THREAD.map((m, i) => (
+                <div
+                  key={i}
+                  className={
+                    m.from === "ai"
+                      ? "max-w-[85%] rounded-2xl rounded-bl-sm bg-white/[0.06] px-3.5 py-2.5"
+                      : "ml-auto max-w-[85%] rounded-2xl rounded-br-sm bg-primary/90 px-3.5 py-2.5 text-primary-foreground"
+                  }
+                >
+                  {m.text}
                 </div>
-                <ul className="mt-8 space-y-3 flex-1">
-                  {t.features.map((f) => (
-                    <li key={f} className="flex items-start gap-2 text-sm">
-                      <Check className={`size-4 mt-0.5 ${t.premium ? "text-accent" : "text-primary"}`} />
-                      <span className="text-foreground/90">{f}</span>
-                    </li>
-                  ))}
-                </ul>
-                <Link to="/signup" className="mt-8">
-                  <Button
-                    className={`w-full rounded-full h-11 ${
-                      t.highlight
-                        ? "bg-gradient-to-r from-primary to-primary-glow text-primary-foreground"
-                        : t.premium
-                        ? "bg-accent text-accent-foreground hover:bg-accent/90"
-                        : "bg-white/5 hover:bg-white/10 text-foreground"
-                    }`}
-                  >
-                    {t.premium ? "Talk to us" : "Start free"}
-                  </Button>
-                </Link>
-              </div>
-            </Reveal>
-          ))}
-        </div>
+              ))}
+            </div>
+            <p className="mt-5 text-[11px] text-muted-foreground">
+              Simulated conversation. No text messages or calls are sent.
+            </p>
+          </div>
+        </Reveal>
       </div>
     </section>
   );
