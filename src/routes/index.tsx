@@ -153,7 +153,8 @@ function Nav() {
         <div className="hidden md:flex items-center gap-8 text-sm text-muted-foreground">
           <a href="#features" className="hover:text-foreground transition-colors">Features</a>
           <a href="#how" className="hover:text-foreground transition-colors">How it works</a>
-          <a href="#pricing" className="hover:text-foreground transition-colors">Pricing</a>
+          <a href="#industries" className="hover:text-foreground transition-colors">Industries</a>
+          <a href="#demo" className="hover:text-foreground transition-colors">Demo</a>
         </div>
         <div className="flex items-center gap-2">
           <Link to="/login" className="hidden sm:inline-block text-sm text-muted-foreground hover:text-foreground transition-colors px-3">Sign in</Link>
@@ -535,30 +536,31 @@ function FinalCTA() {
       <div className="absolute inset-0 [background:radial-gradient(ellipse_60%_60%_at_50%_50%,oklch(0.68_0.24_295/0.35),transparent_70%)]" />
       <div className="relative max-w-5xl mx-auto px-6 text-center">
         <Reveal>
-          <h2 className="text-5xl md:text-8xl font-semibold tracking-[-0.04em] leading-[0.95]">
-            Stop losing
+          <h2 className="text-5xl md:text-7xl font-semibold tracking-[-0.04em] leading-[0.98]">
+            Start with the calls
             <br />
             <span className="bg-gradient-to-br from-white via-primary-glow to-primary bg-clip-text text-transparent">
-              the ones who called.
+              you already missed.
             </span>
           </h2>
         </Reveal>
         <Reveal delay={0.2}>
           <p className="mt-8 text-lg text-muted-foreground max-w-xl mx-auto">
-            Two minutes to install. Revenue rescued by tonight.
+            Create a free workspace, add your business details, and try the follow-up
+            assistant with sample data.
           </p>
         </Reveal>
         <Reveal delay={0.35}>
           <Link to="/signup">
             <Button size="lg" className="mt-10 rounded-full h-14 px-8 text-base bg-gradient-to-r from-primary to-primary-glow text-primary-foreground shadow-[0_0_80px_-10px_var(--primary)] hover:scale-[1.02] transition-transform">
-              Claim your line <ArrowRight className="size-4 ml-2" />
+              Create your workspace <ArrowRight className="size-4 ml-2" />
             </Button>
           </Link>
         </Reveal>
         <Reveal delay={0.5}>
-          <div className="mt-8 flex items-center justify-center gap-6 text-xs uppercase tracking-[0.25em] text-muted-foreground/70">
-            <span className="flex items-center gap-1.5"><Clock className="size-3" /> 2-min setup</span>
-            <span className="flex items-center gap-1.5"><ShieldCheck className="size-3" /> TCPA-safe</span>
+          <div className="mt-8 flex flex-wrap items-center justify-center gap-6 text-xs uppercase tracking-[0.25em] text-muted-foreground/70">
+            <span className="flex items-center gap-1.5"><Clock className="size-3" /> Simulated MVP</span>
+            <span className="flex items-center gap-1.5"><ShieldCheck className="size-3" /> Private to your account</span>
           </div>
         </Reveal>
       </div>
