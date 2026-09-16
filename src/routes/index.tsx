@@ -596,11 +596,11 @@ function Landing() {
     <main className="relative bg-background text-foreground selection:bg-primary/40">
       <Nav />
       <Hero />
-      <Trust />
+      <Industries />
       <Features />
       <HowItWorks />
-      <Testimonials />
-      <Pricing />
+      <Benefits />
+      <DemoPreview />
       <FinalCTA />
       <Footer />
     </main>
