@@ -82,8 +82,12 @@ export type Database = {
           id: string
           industry: string | null
           phone_number: string | null
+          plan: string
           service_area: string | null
           services_offered: string | null
+          stripe_customer_id: string | null
+          stripe_subscription_id: string | null
+          subscription_status: string
           updated_at: string
           user_id: string
         }
@@ -97,8 +101,12 @@ export type Database = {
           id?: string
           industry?: string | null
           phone_number?: string | null
+          plan?: string
           service_area?: string | null
           services_offered?: string | null
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
+          subscription_status?: string
           updated_at?: string
           user_id: string
         }
@@ -112,8 +120,12 @@ export type Database = {
           id?: string
           industry?: string | null
           phone_number?: string | null
+          plan?: string
           service_area?: string | null
           services_offered?: string | null
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
+          subscription_status?: string
           updated_at?: string
           user_id?: string
         }
@@ -217,49 +229,70 @@ export type Database = {
       }
       leads: {
         Row: {
+          attention_reason: string | null
           business_id: string
           created_at: string
           customer_email: string | null
           customer_name: string | null
           customer_phone: string
           estimated_value: number
+          follow_up_stage: number
           id: string
           is_demo: boolean
+          last_customer_reply_at: string | null
           lead_source: Database["public"]["Enums"]["lead_source"]
+          needs_attention: boolean
           notes: string | null
+          opted_out_at: string | null
           qualification: Json
+          sms_opt_out: boolean
           status: Database["public"]["Enums"]["lead_status"]
           updated_at: string
+          urgency: string
         }
         Insert: {
+          attention_reason?: string | null
           business_id: string
           created_at?: string
           customer_email?: string | null
           customer_name?: string | null
           customer_phone: string
           estimated_value?: number
+          follow_up_stage?: number
           id?: string
           is_demo?: boolean
+          last_customer_reply_at?: string | null
           lead_source?: Database["public"]["Enums"]["lead_source"]
+          needs_attention?: boolean
           notes?: string | null
+          opted_out_at?: string | null
           qualification?: Json
+          sms_opt_out?: boolean
           status?: Database["public"]["Enums"]["lead_status"]
           updated_at?: string
+          urgency?: string
         }
         Update: {
+          attention_reason?: string | null
           business_id?: string
           created_at?: string
           customer_email?: string | null
           customer_name?: string | null
           customer_phone?: string
           estimated_value?: number
+          follow_up_stage?: number
           id?: string
           is_demo?: boolean
+          last_customer_reply_at?: string | null
           lead_source?: Database["public"]["Enums"]["lead_source"]
+          needs_attention?: boolean
           notes?: string | null
+          opted_out_at?: string | null
           qualification?: Json
+          sms_opt_out?: boolean
           status?: Database["public"]["Enums"]["lead_status"]
           updated_at?: string
+          urgency?: string
         }
         Relationships: [
           {

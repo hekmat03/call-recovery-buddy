@@ -424,6 +424,7 @@ function Conversation({ leadId, businessId }: { leadId: string; businessId: stri
   const simulate = useServerFn(simulateAiFollowUp);
   const remind = useServerFn(sendFollowUpReminder);
   const [text, setText] = useState("");
+  const [businessText, setBusinessText] = useState("");
 
   const { data: messages = [] } = useQuery({
     queryKey: ["messages", leadId],
@@ -437,9 +438,9 @@ function Conversation({ leadId, businessId }: { leadId: string; businessId: stri
   };
 
   const businessMsg = useMutation({
-    mutationFn: () => send({ data: { leadId, businessId, body: text } }),
+    mutationFn: () => send({ data: { leadId, businessId, body: businessText } }),
     onSuccess: () => {
-      setText("");
+      setBusinessText("");
       refresh();
     },
     onError: (e: unknown) => toast.error("Could not send", { description: String(e) }),
@@ -528,4 +529,32 @@ function Conversation({ leadId, businessId }: { leadId: string; businessId: stri
         />
         <div className="flex flex-wrap gap-2">
           <Button size="sm" onClick={() => aiSim.mutate()} disabled={!text.trim() || pending}>
-            <Sparkles className="mr-1 h-3.5 w-3.5" /> Send as cus
+            <Sparkles className="mr-1 h-3.5 w-3.5" /> Send as customer
+          </Button>
+        </div>
+
+        <Input
+          placeholder="Reply as the business…"
+          value={businessText}
+          onChange={(e) => setBusinessText(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" && businessText.trim() && !pending) businessMsg.mutate();
+          }}
+        />
+        <div className="flex flex-wrap gap-2">
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => businessMsg.mutate()}
+            disabled={!businessText.trim() || pending}
+          >
+            <Send className="mr-1 h-3.5 w-3.5" /> Send as business
+          </Button>
+          <Button size="sm" variant="ghost" onClick={() => followUp.mutate()} disabled={pending}>
+            <Clock className="mr-1 h-3.5 w-3.5" /> Simulate time passing
+          </Button>
+        </div>
+      </div>
+    </Card>
+  );
+}
