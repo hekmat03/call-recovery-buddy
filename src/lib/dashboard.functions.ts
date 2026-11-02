@@ -12,7 +12,7 @@ export const listMyBusinesses = createServerFn({ method: "GET" })
   .handler(async ({ context }) => {
     const { data, error } = await context.supabase
       .from("businesses")
-      .select("id, company_name, industry, phone_number, service_area, business_hours")
+      .select("id, company_name, industry, phone_number, service_area, business_hours, plan, subscription_status")
       .order("created_at", { ascending: true });
     if (error) throw error;
     return (data ?? []).map((b) => ({
@@ -24,6 +24,8 @@ export const listMyBusinesses = createServerFn({ method: "GET" })
         phone: b.phone_number,
         serviceArea: b.service_area,
         businessHours: b.business_hours,
+        plan: b.plan,
+        subscriptionStatus: b.subscription_status,
       },
     }));
   });
